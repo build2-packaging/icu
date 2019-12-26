@@ -1,0 +1,10 @@
+# file      : build/root.build
+# copyright : Copyright (c) 2018-2019 Code Synthesis Ltd
+# license   : Unicode License; see accompanying LICENSE file
+
+$out_root/
+{
+  include libicu/
+}
+
+export $out_root/libicu/$import.target

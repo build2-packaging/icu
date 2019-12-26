@@ -1,0 +1,7 @@
+This document describes how libicuio was packaged for build2. In particular,
+this understanding will be useful when upgrading to a new upstream version.
+See ../README-DEV for general notes on ICU packaging.
+
+Symlink the required upstream directories into libicuio/:
+
+$ ln -s ../../upstream/icu4c/source/io libicuio

@@ -1,0 +1,32 @@
+# file      : build/root.build
+# copyright : Copyright (c) 2018-2019 Code Synthesis Ltd
+# license   : Unicode License; see accompanying LICENSE file
+
+project = libicuuc
+
+using version
+using config
+using test
+using install
+using dist
+
+# The ICU version has the <release>.<shared-update>[.<update>] form. The
+# shared update version is 0 during development, 1 for the initial release,
+# and is incremented for the C/C++ and Java libraries common changes. The
+# update version is incremented (or added) for updates applied to only the
+# C/C++ or Java library.
+#
+# Note that the release version is not a semantic version and we will map the
+# two-component versions to the standard versions as
+# <release>.<shared-update>.0.
+#
+# The library naming scheme on Linux is
+# libicuuc.so.<release>.<shared-update>[.<update>] (LIB_VERSION in
+# icu4c/source/configure.ac). The ABI compatibility is preserved for the
+# shared updates. See also:
+#
+# http://userguide.icu-project.org/design#TOC-Version-Numbers-in-ICU
+#
+abi_version_major = "$version.major"
+abi_version_patch = ($version.patch != 0 ? ".$version.patch" : "")
+abi_version       = "$abi_version_major.$version.minor$abi_version_patch"

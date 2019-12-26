@@ -1,0 +1,137 @@
+This document describes an approach applied to packaging ICU for build2. In
+particular, this understanding will be useful when upgrading to a new upstream
+version.
+
+The upstream package contains a number of libraries providing C/C++ API, their
+usage examples, tests, and development tools. Currently, we only package
+libicuuc, libicui18n, libicudata, and libicuio libraries and package them
+separately, except for libicudata that is packaged together with libicuuc (see
+respective README-DEV files for details).
+
+We add the upstream package as a git submodule and symlink the required files
+and subdirectories into the build2 package subdirectories. Then, when required,
+we "overlay" the upstream with our own headers, placing them into the library
+directory.
+
+Note that symlinking upstream submodule subdirectories into a build2 package
+subdirectory results in creating intermediate build files (.d, .o, etc) inside
+upstream directory while building the package in source tree. That's why we
+need to make sure that packages do not share upstream source files via
+subdirectory symlinks, not to also share the related intermediate files. If
+several packages need to compile the same upstream source file, then only one
+of them can symlink it via the parent directory while others must symlink it
+directly. We also add the `ignore = untracked` configuration option into
+.gitmodules to make sure that git ignores the intermediate build files under
+upstream/ subdirectory.
+
+The upstream package can be configured to contain a specific feature set. We
+reproduce the union of features configured for the upstream source package in
+Debian and Fedora distributions. The configuration options defining these sets
+are specified in the Debian's rules and Fedora's RPM .spec files. These files
+can be obtained as follows:
+
+$ wget http://deb.debian.org/debian/pool/main/i/icu/icu_65.1-1.debian.tar.xz
+$ tar xf icu_65.1-1.debian.tar.xz debian/rules
+
+$ wget https://kojipkgs.fedoraproject.org//packages/icu/65.1/1.fc32/src/icu-65.1-1.fc32.src.rpm
+$ rpm2cpio icu-65.1-1.fc32.src.rpm | cpio -civ '*.spec'
+
+As a side note, on Debian and Fedora the source, libraries, headers, and tools
+are packaged as follows:
+
+                src  libraries  headers       tools
+Debian/Ubuntu:  icu  libicu65   libicu-dev    icu-devtools
+Fedora/RHEL:    icu  libicu     libicu-devel  -
+
+Search for the Debian and Fedora packages at https://packages.debian.org/search
+and https://apps.fedoraproject.org/packages/.
+
+Here are the discovered configuration options.
+
+Debian:
+
+  --enable-static --disable-layoutex --disable-icu-config
+
+Fedora:
+
+  --with-data-packaging=library --disable-samples
+
+The union of these feature sets translates into the following options, after
+suppressing the defaults:
+
+  --enable-static --with-data-packaging=library
+
+See the configuration options description in upstream/icu4c/readme.html.
+
+We, however, drop the external dependencies that are not packaged for build2
+and end up with the following options:
+
+  --enable-static --with-data-packaging=library --disable-layoutex
+
+Normally, when packaging a project, we need to replace some auto-generated
+headers with our own implementations and deduce compilation/linking options.
+For ICU we can rely for that on icu4c/source/{configure.ac,config/*}. In
+practice, however, that can be uneasy and error prone, so you may also need to
+see the actual compiler and linker command lines in the build log.
+
+Also, the upstream package produces a lot of binary data, building some tools
+and using them to compile text data files of various formats and to transcode
+some binary data files for the target platform (more that 3600 files in
+total). Afterwards it runs the pkgdata utility that produces the libicudata
+library which embeds the resulting binary data. Internally, this utility
+converts the data into assembly code, compiles and links the library using the
+specified options file. Note that to resolve the chicken and egg problem
+(tools link the common library that links the data library) the upstream
+builds the stub data library first.
+
+In future we may implement this logic in the buildfile, but currently we reuse
+the upstream's auto-generated source code for the data bundling. Let's,
+however, make the upstream package to generate a more portable C code, rather
+than the assembly code. Unfortunately there is no way to request this behavior
+via the configure script options, so we apply the following patch to
+icu4c/source/data/Makefile.in:
+
+--- icu4c/source/data/Makefile.in.orig	2019-12-22 18:07:54.432627162 +0300
++++ icu4c/source/data/Makefile.in	2019-12-28 17:10:09.674021548 +0300
+@@ -26,6 +26,9 @@ LIB_STATIC_ICUDATA_NAME=$(LIBSICU)$(DATA
+ ifeq ($(PKGDATA_OPTS),)
+ PKGDATA_OPTS = -O $(top_builddir)/data/icupkg.inc
+ endif
++
++PKGDATA_OPTS += --without-assembly
++
+ ifeq ($(PKGDATA_VERSIONING),)
+ PKGDATA_VERSIONING = -r $(SO_TARGET_VERSION)
+ endif
+
+To configure and build the upstream package on the platform of interest run
+the following commands in the upstream's icu4c/source/ directory.
+
+On POSIX and for MinGW GCC:
+
+$ mkdir build
+$ cd build
+
+# Run `./runConfigureICU --help` to see the platform names.
+#
+$ ../runConfigureICU Linux/gcc --enable-static --with-data-packaging=library \
+  --disable-layoutex >build.log 2>&1
+
+$ make VERBOSE=1 >>build.log 2>&1
+
+For MSVC (MSYS is a prerequisite):
+
+> mkdir build
+> cd build
+> set "PATH=%PATH%;C:\msys64\usr\bin"
+> bash ../runConfigureICU MSYS/MSVC --enable-static ^
+  --with-data-packaging=library --disable-layoutex >build.log 2>&1
+> make VERBOSE=1 >>build.log 2>&1
+
+See upstream/icu4c/readme.html for details.
+
+When the packaging is complete, build all the project packages in source tree
+and make sure that no ICU headers are included from the system, running the
+following command from the project root:
+
+$ fgrep -a -e /usr/include/unicode `find . -type f -name '*.d'`

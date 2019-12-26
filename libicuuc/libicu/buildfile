@@ -1,0 +1,165 @@
+# file      : libicu/buildfile
+# copyright : Copyright (c) 2018-2019 Code Synthesis Ltd
+# license   : Unicode License; see accompanying LICENSE file
+
+./: lib{icuuc} lib{icudata}
+
+lib{icuuc}: uc/hxx{**} uc/cxx{* -ucasemap} cxx{ucasemap} lib{icudata}
+
+lib{icudata}: data/{h c}{*} uc/unicode/h{*}
+
+# Our C-files in data/{le,be}/ are included into C-files in ./data/, so treat
+# them as files to exclude from the compilation.
+#
+lib{icudata}: data/le/file{*} data/be/file{*}
+
+tclass = $cc.target.class
+tsys   = $cc.target.system
+
+windows = ($tclass == 'windows')
+
+# Build options.
+#
+cc.poptions  += -DU_ATTRIBUTE_DEPRECATED=
+cxx.poptions += -DU_COMMON_IMPLEMENTATION
+
+if! $windows
+  cc.poptions += -DU_HAVE_STRTOD_L=1
+else
+  cc.poptions += -DU_HAVE_STRTOD_L=0 -DHAVE_DLOPEN=0 -DU_HAVE_MMAP=0 -DWIN32
+
+switch $tclass, $tsys
+{
+  case 'linux'
+    cc.poptions += -D_REENTRANT -DU_HAVE_ELF_H -DU_HAVE_XLOCALE_H=0
+
+  case 'bsd'
+    cc.poptions += -D_REENTRANT -DU_HAVE_ELF_H -DU_HAVE_XLOCALE_H=1 \
+                   -DU_HAVE_TIMEZONE=0 -DU_HAVE_STRING_VIEW=1
+
+  case 'macos'
+  {
+    cc.poptions += -DU_HAVE_XLOCALE_H=1 -DU_HAVE_STRING_VIEW=1
+
+    # Note that upstream requests the POSIX 2004 compliance (see
+    # uc/uposixdefs.h for details). This results with compilation errors for
+    # some source files when build on MacOS with gcc (as of 9.2; GCC issues
+    # 93151 and 93469 are reported). We workaround the issue disabling this
+    # POSIX compliance request for the faulty source files (luckily they don't
+    # require such a compliance).
+    #
+    if ($cxx.id == 'gcc')
+      uc/obj{putil umapfile}: cxx.poptions += -D_XOPEN_SOURCE=400
+  }
+
+  case 'windows', 'mingw32'
+    cc.poptions += -DWINVER=0x0601 -D_WIN32_WINNT=0x0601 \
+                   -D_MT # Used instead of -mthreads.
+
+  case 'windows'
+    cc.poptions += -DU_HAVE_DIRENT_H=0 -DU_HAVE_POPEN=0 -DU_HAVE_TZNAME=0
+}
+
+cc.poptions =+ "-I$src_root" "-I$src_base/uc"
+
+if $windows
+  obja{*}: cc.poptions += -DU_STATIC_IMPLEMENTATION
+
+switch $c.class, $tsys
+{
+  case 'gcc'
+  {
+    cc.coptions  += -fvisibility=hidden
+
+    # Disable warnings that pop up with -Wall -Wextra. Upstream doesn't seem
+    # to care about these and it is not easy to disable specific warnings in a
+    # way that works across compilers/version (some -Wno-* options are only
+    # recognized in newer versions).
+    #
+    cc.coptions += -Wno-all -Wno-extra
+
+    # Disable the Clang targeting MSVC warnings.
+    #
+    if ($c.id == 'clang' && $tsys == 'win32-msvc')
+      cc.coptions += -Wno-ignored-pragma-optimize -Wno-ignored-attributes
+  }
+  case 'msvc'
+  {
+    cc.coptions  += /utf-8 /GF /Gy
+    cxx.coptions += /Zc:wchar_t
+
+    # Disable warnings that pop up with /W3.
+    #
+    c.coptions   += /wd4229
+    cxx.coptions += /wd4244 /wd4996
+  }
+}
+
+# If install.root is specified, then define the DEFAULT_ICU_PLUGINS macro when
+# compiling uc/icuplug.cpp and leave it undefined otherwise.
+#
+if ($install.root != [null])
+{
+  plugins_dir = $install.resolve($install.lib)/icu
+
+  # Escape backslashes and quotes in the directory path prior to representing
+  # it as C++ string literal.
+  #
+  pd = $regex.replace($plugins_dir, '(\\|")', '\\\1')
+
+  uc/obj{icuplug}: cxx.poptions += -DDEFAULT_ICU_PLUGINS="\"$pd\""
+}
+
+switch $tclass, $tsys
+{
+  case 'linux'
+  {
+    cc.loptions += -Wl,-Bsymbolic     \
+                   -Wl,--no-undefined # Make sure all symbols are resolvable.
+
+    cxx.libs += -lpthread -ldl -lm
+  }
+  case 'bsd'
+  {
+    cc.loptions += -Wl,-Bsymbolic
+    cxx.libs    += -lpthread -lm
+  }
+  case 'macos'
+  {
+    cxx.libs += -lpthread -lm
+  }
+  case 'windows', 'mingw32'
+  {
+    cc.loptions += -Wl,-Bsymbolic -Wl,--enable-auto-import
+    cxx.libs    += -lpthread -lm
+  }
+  case 'windows'
+  {
+    cxx.libs += advapi32.lib
+  }
+}
+
+# Export options.
+#
+# We don't export libicudata since it is not of much use to anyone except
+# libicuuc.
+#
+lib{icuuc}: cc.export.poptions = "-I$src_base/uc"
+
+# See bootstrap.build for details.
+#
+# Note that on Windows and POSIX the data library is named quite differently
+# as icudt65.dll and libicudata.so.65.1, respectivelly. We name it
+# consistently as icudata-65.dll and libicudata-65.so.
+#
+if $version.pre_release
+  lib{icudata icuuc}: bin.lib.version = @"-$version.project_id"
+else
+  lib{icudata icuuc}: bin.lib.version = @"-$abi_version_major" \
+                                        linux@"$abi_version"
+
+# Install headers from the uc/unicode/ subdirectory only.
+#
+h{*}:              install = false
+hxx{*}:            install = false
+uc/unicode/hxx{*}: install = include/unicode/

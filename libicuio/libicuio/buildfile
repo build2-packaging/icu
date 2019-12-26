@@ -1,0 +1,106 @@
+# file      : libicuio/buildfile
+# copyright : Copyright (c) 2018-2019 Code Synthesis Ltd
+# license   : Unicode License; see accompanying LICENSE file
+
+import int_libs  = libicui18n%lib{icui18n}
+import int_libs += libicuuc%lib{icuuc}
+
+lib{icuio}: {hxx cxx}{**} $int_libs
+
+tclass = $cxx.target.class
+tsys   = $cxx.target.system
+
+windows = ($tclass == 'windows')
+
+# Build options.
+#
+cxx.poptions  += -DU_IO_IMPLEMENTATION -DU_ATTRIBUTE_DEPRECATED=
+
+if! $windows
+  cxx.poptions += -DU_HAVE_STRTOD_L=1
+else
+  cxx.poptions += -DU_HAVE_STRTOD_L=0 -DHAVE_DLOPEN=0 -DU_HAVE_MMAP=0 -DWIN32
+
+switch $tclass, $tsys
+{
+  case 'linux'
+    cxx.poptions += -D_REENTRANT -DU_HAVE_ELF_H -DU_HAVE_XLOCALE_H=0
+
+  case 'bsd'
+    cxx.poptions += -D_REENTRANT -DU_HAVE_ELF_H -DU_HAVE_XLOCALE_H=1 \
+                    -DU_HAVE_TIMEZONE=0 -DU_HAVE_STRING_VIEW=1
+
+  case 'macos'
+    cxx.poptions += -DU_HAVE_XLOCALE_H=1 -DU_HAVE_STRING_VIEW=1
+
+  case 'windows', 'mingw32'
+    cxx.poptions += -DWINVER=0x0601 -D_WIN32_WINNT=0x0601 \
+                    -D_MT # Used instead of -mthreads.
+
+  case 'windows'
+    cxx.poptions += -DU_HAVE_DIRENT_H=0 -DU_HAVE_POPEN=0 -DU_HAVE_TZNAME=0
+}
+
+cxx.poptions =+ "-I$src_base/io"
+
+if $windows
+  obja{*}: cxx.poptions += -DU_STATIC_IMPLEMENTATION
+
+switch $cxx.class, $tsys
+{
+  case 'gcc'
+    cxx.coptions += -fvisibility=hidden
+
+  case 'msvc'
+    cxx.coptions += /utf-8 /Zc:wchar_t /GF /Gy \
+                    /wd4996 # Disable warnings that pop up with /W3.
+}
+
+switch $tclass, $tsys
+{
+  case 'linux'
+  {
+    cxx.loptions += -Wl,-Bsymbolic     \
+                    -Wl,--no-undefined # Make sure all symbols are resolvable.
+
+    cxx.libs += -lpthread -ldl -lm
+  }
+  case 'bsd'
+  {
+    cxx.loptions += -Wl,-Bsymbolic
+    cxx.libs     += -lpthread -lm
+  }
+  case 'macos'
+  {
+    cxx.libs += -lpthread -lm
+  }
+  case 'windows', 'mingw32'
+  {
+    cxx.loptions += -Wl,-Bsymbolic -Wl,--enable-auto-import
+    cxx.libs     += -lpthread -lm
+  }
+  case 'windows'
+  {
+    cxx.libs += advapi32.lib
+  }
+}
+
+# Export options.
+#
+lib{icuio}:
+{
+  cc.export.poptions = "-I$src_base/io"
+  cc.export.libs     = $int_libs
+}
+
+# See bootstrap.build for details.
+#
+if $version.pre_release
+  lib{icuio}: bin.lib.version = @"-$version.project_id"
+else
+  lib{icuio}: bin.lib.version = @"-$abi_version_major" linux@"$abi_version"
+
+# Install headers from the io/unicode/ subdirectory only.
+#
+hxx{*}:            install = false
+io/unicode/hxx{*}: install = include/unicode/

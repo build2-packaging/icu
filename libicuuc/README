@@ -1,0 +1,23 @@
+International Components for Unicode (ICU) is a set of cross-platform Unicode-
+based globalization libraries with libicuuc C/C++ library providing core
+Unicode support and basic functionality (character properties, locales, etc)
+and libicudata C library providing data for libicuuc and libicui18n (locale
+data, etc). For more information see:
+
+http://site.icu-project.org/
+
+This package contains the original libicuuc and libicudata libraries source
+code overlaid with the build2-based build system and packaged for the build2
+package manager (bpkg).
+
+See the INSTALL file for the prerequisites and installation instructions.
+
+Send questions, bug reports, or any other feedback about library itself to the
+ICU mailing lists. Send build system and packaging-related feedback to the
+packaging@build2.org mailing list (see https://lists.build2.org for posting
+guidelines, etc).
+
+The packaging of libicuuc and libicudata for build2 is tracked in a Git
+repository at:
+
+https://git.build2.org/cgit/packaging/icu/

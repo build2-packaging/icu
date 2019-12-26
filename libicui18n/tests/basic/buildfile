@@ -1,0 +1,8 @@
+# file      : tests/basic/buildfile
+# copyright : Copyright (c) 2009-2019 Code Synthesis Tools CC
+# license   : Unicode License; see accompanying LICENSE file
+
+import libs  = libicui18n%lib{icui18n}
+import libs += libicuuc%lib{icuuc}
+
+exe{driver}: {hxx cxx}{*} $libs testscript

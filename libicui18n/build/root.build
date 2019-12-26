@@ -1,0 +1,19 @@
+# file      : build/root.build
+# copyright : Copyright (c) 2018-2019 Code Synthesis Ltd
+# license   : Unicode License; see accompanying LICENSE file
+
+# Note that upstream compiles with -std=c++11 but this ends up with the 'auto
+# return without trailing return type' error for Clang targeting MSVC runtime.
+#
+cxx.std = latest
+
+using cxx
+
+hxx{*}: extension = h
+cxx{*}: extension = cpp
+
+if ($cxx.target.system == 'win32-msvc')
+  cxx.poptions += -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS
+
+if ($cxx.class == 'msvc')
+  cxx.coptions += /wd4251 /wd4275 /wd4800

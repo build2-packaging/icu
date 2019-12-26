@@ -1,0 +1,18 @@
+# file      : build/root.build
+# copyright : Copyright (c) 2018-2019 Code Synthesis Ltd
+# license   : Unicode License; see accompanying LICENSE file
+
+project = libicuio
+
+using version
+using config
+using test
+using install
+using dist
+
+# Sync with the libicuuc library ABI version (see libicuuc's bootstrap.build
+# for details).
+#
+abi_version_major = "$version.major"
+abi_version_patch = ($version.patch != 0 ? ".$version.patch" : "")
+abi_version       = "$abi_version_major.$version.minor$abi_version_patch"

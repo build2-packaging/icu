@@ -1,0 +1,78 @@
+This document describes how libicuuc and libicudata were packaged for build2.
+In particular, this understanding will be useful when upgrading to a new
+upstream version. See ../README-DEV for general notes on ICU packaging.
+
+Symlink the required upstream directories into libicu/:
+
+$ ln -s ../../upstream/icu4c/source/common libicu/uc
+
+Compiling against the latest C++ standard ends up with the "invalid conversion
+from ‘const char8_t*’ to ‘const char*’" errors for libicu/uc/ucasemap.cpp and
+so we patch it:
+
+$ cp libicu/uc/ucasemap.cpp libicu
+$ patch -p0 <libicu/ucasemap.cpp.patch
+
+Copy the required upstream auto-generated libicudata source files into
+libicu/data/, replacing '65' with a major version. Here we assume that the
+upstream package is built on the ASCII-based platform with the little-endian
+byte ordering. Note that while copying we join the source files by the data
+type to speedup compilation.
+
+$ cd libicu/data/
+$ rm -r -f le
+$ mkdir le
+$ cp <upstream-out-dir>/data/out/tmp/icudt65l_dat.c le
+$ for f in $(find <upstream-out-dir>/data/out/tmp/ -name '*.c' ! -name icudt65l_dat.c); do
+    n="$(sed -n -r -e 's%^(coll|curr|brkitr|lang|locales|rbnf|region|unit|zone)_.*$%\1%p' <<< $(basename "$f"))"
+    if [ -z "$n" ]; then
+      n="other"
+    fi
+    cat "$f" >>le/$n.c
+  done
+
+Note that we also need to generate libicudata source files for the big-endian
+byte ordering, transcoding the auto-generated binary data files and converting
+them to C files afterwards:
+
+$ cd <upstream-out-dir>/data
+
+$ export PATH=<upstream-out-dir>/bin:$PATH
+$ export LD_LIBRARY_PATH=<upstream-out-dir>/lib:$LD_LIBRARY_PATH
+
+# Transcode.
+#
+$ for f in $(cd out/build/icudt65l && find -type f); do
+    r="out/build/icudt65b/$f"
+    mkdir -p "$(dirname "$r")"
+    icupkg -tb "out/build/icudt65l/$f" "$r"
+  done
+
+# Convert to C files.
+#
+$ mkdir out/tmp2
+$ pkgdata -O icupkg.inc --without-assembly -q -c -s out/build/icudt65b \
+-d out/tmp2 -e icudt65 -T out/tmp2 -p icudt65b -m dll -r 65.1 -L icudata \
+out/tmp/icudata.lst
+
+Now copy the big-endian data files into libicu/data/, similar to the above:
+
+$ cd libicu/data/
+$ rm -r -f be
+$ mkdir be
+$ cp <upstream-out-dir>/data/out/tmp2/icudt65b_dat.c be
+$ for f in $(find <upstream-out-dir>/data/out/tmp2/ -name '*.c' ! -name icudt65b_dat.c); do
+    n="$(sed -n -r -e 's%^(coll|curr|brkitr|lang|locales|rbnf|region|unit|zone)_.*$%\1%p' <<< $(basename "$f"))"
+    if [ -z "$n" ]; then
+      n="other"
+    fi
+    cat "$f" >>be/$n.c
+  done
+
+Note that currently we don't support EBCDIC charset-based platforms that are
+not very common these days. Thought, we can support them if requested (see the
+-te option description in `icupkg --help` for details).
+
+Manually create libicu/data/config.h and libicu/data/*.c files including the
+corresponding type-based data files (le/coll.c, etc) depending on the target
+platform byte ordering.

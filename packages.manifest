@@ -1,0 +1,6 @@
+: 1
+location: libicuuc/
+:
+location: libicui18n/
+:
+location: libicuio/

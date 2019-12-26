@@ -1,0 +1,127 @@
+# file      : libicui18n/buildfile
+# copyright : Copyright (c) 2018-2019 Code Synthesis Ltd
+# license   : Unicode License; see accompanying LICENSE file
+
+import int_libs = libicuuc%lib{icuuc}
+
+lib{icui18n}: {hxx cxx}{**} $int_libs
+
+tclass = $cxx.target.class
+tsys   = $cxx.target.system
+
+windows = ($tclass == 'windows')
+
+# Build options.
+#
+cxx.poptions  += -DU_I18N_IMPLEMENTATION -DU_ATTRIBUTE_DEPRECATED=
+
+if! $windows
+  cxx.poptions += -DU_HAVE_STRTOD_L=1
+else
+  cxx.poptions += -DU_HAVE_STRTOD_L=0 -DHAVE_DLOPEN=0 -DU_HAVE_MMAP=0 -DWIN32
+
+switch $tclass, $tsys
+{
+  case 'linux'
+    cxx.poptions += -D_REENTRANT -DU_HAVE_ELF_H -DU_HAVE_XLOCALE_H=0
+
+  case 'bsd'
+    cxx.poptions += -D_REENTRANT -DU_HAVE_ELF_H -DU_HAVE_XLOCALE_H=1 \
+                    -DU_HAVE_TIMEZONE=0 -DU_HAVE_STRING_VIEW=1
+
+  case 'macos'
+    cxx.poptions += -DU_HAVE_XLOCALE_H=1 -DU_HAVE_STRING_VIEW=1
+
+  case 'windows', 'mingw32'
+    cxx.poptions += -DWINVER=0x0601 -D_WIN32_WINNT=0x0601 \
+                    -D_MT # Used instead of -mthreads.
+
+  case 'windows'
+    cxx.poptions += -DU_HAVE_DIRENT_H=0 -DU_HAVE_POPEN=0 -DU_HAVE_TZNAME=0
+}
+
+cxx.poptions =+ "-I$src_base/i18n"
+
+if $windows
+  obja{*}: cxx.poptions += -DU_STATIC_IMPLEMENTATION
+
+switch $cxx.class, $tsys
+{
+  case 'gcc'
+  {
+    cxx.coptions += -fvisibility=hidden
+
+    # Disable warnings that pop up with -Wall -Wextra. Upstream doesn't seem
+    # to care about these and it is not easy to disable specific warnings in a
+    # way that works across compilers/version (some -Wno-* options are only
+    # recognized in newer versions).
+    #
+    cxx.coptions += -Wno-all -Wno-extra
+
+    # Disable the Clang targeting MSVC warnings.
+    #
+    if ($cxx.id == 'clang' && $tsys == 'win32-msvc')
+      cxx.coptions += -Wno-ignored-pragma-optimize
+  }
+  case 'msvc'
+  {
+    cxx.coptions += /utf-8 /Zc:wchar_t /GF /Gy
+
+    # Disable warnings that pop up with /W3.
+    #
+    cxx.coptions += /wd4244 /wd4996
+  }
+}
+
+switch $tclass, $tsys
+{
+  case 'linux'
+  {
+    cxx.loptions += -Wl,-Bsymbolic     \
+                    -Wl,--no-undefined # Make sure all symbols are resolvable.
+
+    cxx.libs += -lpthread -ldl -lm
+  }
+  case 'bsd'
+  {
+    cxx.loptions += -Wl,-Bsymbolic
+    cxx.libs     += -lpthread -lm
+  }
+  case 'macos'
+  {
+    cxx.libs += -lpthread -lm
+  }
+  case 'windows', 'mingw32'
+  {
+    cxx.loptions += -Wl,-Bsymbolic -Wl,--enable-auto-import
+    cxx.libs     += -lpthread -lm
+  }
+  case 'windows'
+  {
+    cxx.libs += advapi32.lib
+  }
+}
+
+# Export options.
+#
+lib{icui18n}:
+{
+  cc.export.poptions = "-I$src_base/i18n"
+  cc.export.libs     = $int_libs
+}
+
+# See bootstrap.build for details.
+#
+# Note that on Windows and POSIX the library is named quite differently as
+# icuin65.dll and libicui18n.so.65.1, respectivelly. We name it consistently
+# as libicui18n-65.dll and libicui18n-65.so.
+#
+if $version.pre_release
+  lib{icui18n}: bin.lib.version = @"-$version.project_id"
+else
+  lib{icui18n}: bin.lib.version = @"-$abi_version_major" linux@"$abi_version"
+
+# Install headers from the i18n/unicode/ subdirectory only.
+#
+hxx{*}:              install = false
+i18n/unicode/hxx{*}: install = include/unicode/
