@@ -1,6 +1,6 @@
 : 1
 name: libicuuc
-version: 65.1.0-a.0.z
+version: 65.1.0
 upstream-version: 65.1
 project: icu
 summary: ICU basic internationalization C/C++ library
