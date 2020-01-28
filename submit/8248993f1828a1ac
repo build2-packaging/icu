@@ -1,0 +1,7 @@
+: 1
+name: libicui18n
+version: 65.1.0
+upstream-version: 65.1
+project: icu
+summary: ICU high-level internationalization C/C++ library
+license: Unicode, BSD3, BSD2; Unicode for the most of original files.
