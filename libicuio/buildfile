@@ -1,5 +1,4 @@
 # file      : buildfile
-# copyright : Copyright (c) 2018-2019 Code Synthesis Ltd
 # license   : Unicode License; see accompanying LICENSE file
 
 ./: {*/ -build/} doc{LICENSE INSTALL README} manifest

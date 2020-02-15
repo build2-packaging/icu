@@ -1,5 +1,4 @@
 # file      : libicui18n/buildfile
-# copyright : Copyright (c) 2018-2019 Code Synthesis Ltd
 # license   : Unicode License; see accompanying LICENSE file
 
 import int_libs = libicuuc%lib{icuuc}
@@ -93,8 +92,11 @@ switch $tclass, $tsys
   }
   case 'windows', 'mingw32'
   {
-    cxx.loptions += -Wl,-Bsymbolic -Wl,--enable-auto-import
-    cxx.libs     += -lpthread -lm
+    # Note that we ommit -mthreads, -lpthread, and -lm that the upstream
+    # package also passes (see libicuuc/libicu/buildfile for details).
+    #
+    cxx.loptions += -Wl,-Bsymbolic -Wl,--enable-auto-import \
+                    -Wl,--no-undefined # Make sure all symbols are resolvable.
   }
   case 'windows'
   {

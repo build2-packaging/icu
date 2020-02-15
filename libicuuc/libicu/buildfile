@@ -1,5 +1,4 @@
 # file      : libicu/buildfile
-# copyright : Copyright (c) 2018-2019 Code Synthesis Ltd
 # license   : Unicode License; see accompanying LICENSE file
 
 ./: lib{icuuc} lib{icudata}
@@ -45,8 +44,8 @@ switch $tclass, $tsys
     # uc/uposixdefs.h for details). This results with compilation errors for
     # some source files when build on MacOS with gcc (as of 9.2; GCC issues
     # 93151 and 93469 are reported). We workaround the issue disabling this
-    # POSIX compliance request for the faulty source files (luckily they don't
-    # require such a compliance).
+    # POSIX compliance request for the faulty source files (luckily the
+    # request is redundant for them).
     #
     if ($cxx.id == 'gcc')
       uc/obj{putil umapfile}: cxx.poptions += -D_XOPEN_SOURCE=400
@@ -130,8 +129,12 @@ switch $tclass, $tsys
   }
   case 'windows', 'mingw32'
   {
-    cc.loptions += -Wl,-Bsymbolic -Wl,--enable-auto-import
-    cxx.libs    += -lpthread -lm
+    # Note that upstream also passes -mthreads (thread-safe exception
+    # handling) that we omit as ICU never throws exceptions (see ICU FAQs for
+    # details). We also omit -lpthread -lm that seems to be redundant.
+    #
+    cc.loptions += -Wl,-Bsymbolic -Wl,--enable-auto-import \
+                   -Wl,--no-undefined # Make sure all symbols are resolvable.
   }
   case 'windows'
   {

@@ -1,17 +1,18 @@
 # file      : tests/build/root.build
-# copyright : Copyright (c) 2016-2019 Code Synthesis Ltd
 # license   : Unicode License; see accompanying LICENSE file
 
-using c
+cxx.std = latest
 
-h{*}: extension = h
-c{*}: extension = c
+using cxx
 
-if ($c.target.system == 'win32-msvc')
-  c.poptions += -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS
+hxx{*}: extension = h
+cxx{*}: extension = cpp
 
-if ($c.class == 'msvc')
-  c.coptions += /wd4251 /wd4275 /wd4800
+if ($cxx.target.system == 'win32-msvc')
+  cxx.poptions += -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS
+
+if ($cxx.class == 'msvc')
+  cxx.coptions += /wd4251 /wd4275 /wd4800
 
 # Every exe{} in this subproject is by default a test.
 #
@@ -19,4 +20,4 @@ exe{*}: test = true
 
 # Specify the test target for cross-testing.
 #
-test.target = $c.target
+test.target = $cxx.target

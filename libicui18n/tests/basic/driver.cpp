@@ -1,5 +1,4 @@
 // file      : tests/basic/driver.cpp
-// copyright : Copyright (c) 2009-2019 Code Synthesis Tools CC
 // license   : Unicode License; see accompanying LICENSE file
 
 #include <string>

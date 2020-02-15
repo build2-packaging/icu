@@ -1,7 +1,6 @@
-/* file      : tests/basic/driver.c
- * copyright : Copyright (c) 2009-2019 Code Synthesis Tools CC
- * license   : Unicode License; see accompanying LICENSE file
- */
+// file      : tests/basic/driver.cpp
+// license   : Unicode License; see accompanying LICENSE file
+
 #include <stdio.h>
 #include <assert.h>
 
@@ -11,19 +10,19 @@
 #include <unicode/utypes.h>
 #include <unicode/uversion.h>
 
-/* Usage: argv[0]
- *
- * Test some basic libicuuc functionality:
- *
- * - query and print the library version
- * - set, query and print the default locale
- * - load a portion of the bundled data and print its format id/version
- */
+// Usage: argv[0]
+//
+// Test some basic libicuuc functionality:
+//
+// - query and print the library version
+// - set, query and print the default locale
+// - load a portion of the bundled data and print its format id/version
+
 int
 main ()
 {
-  /* Print version.
-   */
+  // Print version.
+  //
   UVersionInfo v;
   u_getVersion (v);
 
@@ -32,8 +31,8 @@ main ()
 
   printf ("version: %s\n", s);
 
-  /* Change and print the current locale.
-   */
+  // Change and print the current locale.
+  //
   UErrorCode e = U_ZERO_ERROR;
 
   uloc_setDefault ("en_GB", &e);
@@ -47,9 +46,9 @@ main ()
 
   printf ("locale: %s\n", uloc_getDefault ());
 
-  /* Check that data is properly loaded from the libicudata's data bundle and
-   * print its format id/version.
-   */
+  // Check that data is properly loaded from the libicudata's data bundle and
+  // print its format id/version.
+  //
   UDataMemory* d = udata_open (NULL, "res", "en_US", &e);
 
   if (U_FAILURE (e))
