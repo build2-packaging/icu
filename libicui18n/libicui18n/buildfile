@@ -41,8 +41,7 @@ switch $tclass, $tsys
 
 cxx.poptions =+ "-I$src_base/i18n"
 
-if $windows
-  obja{*}: cxx.poptions += -DU_STATIC_IMPLEMENTATION
+obja{*}: cxx.poptions += -DU_STATIC_IMPLEMENTATION
 
 switch $cxx.class, $tsys
 {
@@ -111,6 +110,8 @@ lib{icui18n}:
   cc.export.poptions = "-I$src_base/i18n"
   cc.export.libs     = $int_libs
 }
+
+liba{icui18n}: cc.export.poptions += -DU_STATIC_IMPLEMENTATION
 
 # See bootstrap.build for details.
 #

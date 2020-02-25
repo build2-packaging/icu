@@ -61,8 +61,7 @@ switch $tclass, $tsys
 
 cc.poptions =+ "-I$src_root" "-I$src_base/uc"
 
-if $windows
-  obja{*}: cc.poptions += -DU_STATIC_IMPLEMENTATION
+obja{*}: cc.poptions += -DU_STATIC_IMPLEMENTATION
 
 switch $c.class, $tsys
 {
@@ -147,7 +146,8 @@ switch $tclass, $tsys
 # We don't export libicudata since it is not of much use to anyone except
 # libicuuc.
 #
-lib{icuuc}: cc.export.poptions = "-I$src_base/uc"
+lib{icuuc}:  cc.export.poptions  = "-I$src_base/uc"
+liba{icuuc}: cc.export.poptions += -DU_STATIC_IMPLEMENTATION
 
 # See bootstrap.build for details.
 #
