@@ -3,7 +3,9 @@
 
 ./: lib{icuuc} lib{icudata}
 
-lib{icuuc}: uc/hxx{**} uc/cxx{* -ucasemap} cxx{ucasemap} lib{icudata}
+patched = ucasemap unistr
+
+lib{icuuc}: uc/hxx{**} uc/cxx{* -{$patched}} cxx{$patched} lib{icudata}
 
 lib{icudata}: data/{h c}{*} uc/unicode/h{*}
 

@@ -13,6 +13,13 @@ so we patch it:
 $ cp libicu/uc/ucasemap.cpp libicu
 $ patch -p0 <libicu/ucasemap.cpp.patch
 
+Also we fix a security issue CVE-2020-10531 reported by Debian using the
+upstream's fix (commit b7d08bc04a4296982fcef8b6b8a354a9e4e7afca) as a base
+(dropping the test changes):
+
+$ cp libicu/uc/unistr.cpp libicu
+$ patch -p0 <libicu/unistr.cpp.patch
+
 Copy the required upstream auto-generated libicudata source files into
 libicu/data/, replacing '65' with a major version. Here we assume that the
 upstream package is built on the ASCII-based platform with the little-endian
