@@ -1,0 +1,29 @@
+--- libicui18n/i18n/rbtz.cpp	2019-12-23 14:38:40.227889254 +0300
++++ libicui18n/rbtz.cpp	2020-07-21 14:30:49.408841121 +0300
+@@ -76,7 +76,7 @@ RuleBasedTimeZone::~RuleBasedTimeZone()
+ 
+ RuleBasedTimeZone&
+ RuleBasedTimeZone::operator=(const RuleBasedTimeZone& right) {
+-    if (*this != right) {
++    if (!(*this == right)) {
+         BasicTimeZone::operator=(right);
+         deleteRules();
+         fInitialRule = right.fInitialRule->clone();
+@@ -98,7 +98,7 @@ RuleBasedTimeZone::operator==(const Time
+         return FALSE;
+     }
+     RuleBasedTimeZone *rbtz = (RuleBasedTimeZone*)&that;
+-    if (*fInitialRule != *(rbtz->fInitialRule)) {
++    if (!(*fInitialRule == *(rbtz->fInitialRule))) {
+         return FALSE;
+     }
+     if (compareRules(fHistoricRules, rbtz->fHistoricRules)
+@@ -532,7 +532,7 @@ RuleBasedTimeZone::hasSameRules(const Ti
+         return FALSE;
+     }
+     const RuleBasedTimeZone& that = (const RuleBasedTimeZone&)other;
+-    if (*fInitialRule != *(that.fInitialRule)) {
++    if (!(*fInitialRule == *(that.fInitialRule))) {
+         return FALSE;
+     }
+     if (compareRules(fHistoricRules, that.fHistoricRules)

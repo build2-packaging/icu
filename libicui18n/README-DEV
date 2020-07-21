@@ -5,3 +5,23 @@ See ../README-DEV for general notes on ICU packaging.
 Symlink the required upstream directories into libicui18n/:
 
 $ ln -s ../../upstream/icu4c/source/i18n libicui18n
+
+Fix Clang 10 compilation errors:
+
+$ cp libicui18n/i18n/stsearch.cpp libicui18n
+$ patch -p0 <libicui18n/stsearch.cpp.patch
+
+$ cp libicui18n/i18n/olsontz.cpp libicui18n
+$ patch -p0 <libicui18n/olsontz.cpp.patch
+
+$ cp libicui18n/i18n/vtzone.cpp libicui18n
+$ patch -p0 <libicui18n/vtzone.cpp.patch
+
+$ cp libicui18n/i18n/rbtz.cpp libicui18n
+$ patch -p0 <libicui18n/rbtz.cpp.patch
+
+$ cp libicui18n/i18n/dtitvfmt.cpp libicui18n
+$ patch -p0 <libicui18n/dtitvfmt.cpp.patch
+
+$ cp libicui18n/i18n/basictz.cpp libicui18n
+$ patch -p0 <libicui18n/basictz.cpp.patch

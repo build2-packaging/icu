@@ -41,7 +41,7 @@ are packaged as follows:
 
                 src  libraries  headers       tools
 Debian/Ubuntu:  icu  libicu65   libicu-dev    icu-devtools
-Fedora/RHEL:    icu  libicu     libicu-devel  -
+Fedora/RHEL:    icu  libicu     libicu-devel  icu
 
 Search for the Debian and Fedora packages at https://packages.debian.org/search
 and https://apps.fedoraproject.org/packages/.

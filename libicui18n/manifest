@@ -1,10 +1,10 @@
 : 1
 name: libicui18n
-version: 65.1.0+3
+version: 65.1.0+4
 upstream-version: 65.1
 project: icu
 summary: ICU high-level internationalization C/C++ library
-license: Unicode, BSD3, BSD2 ; Unicode for the most of original files.
+license: Unicode-DFS-2016 AND BSD-3-Clause AND BSD-2-Clause ; Unicode License Agreement for the most of original files.
 topics: C, C++, Unicode, internationalization
 description-file: README
 url: http://site.icu-project.org/
@@ -13,7 +13,7 @@ src-url: https://git.build2.org/cgit/packaging/icu/icu/tree/libicui18n/
 package-url: https://git.build2.org/cgit/packaging/icu/
 email: icu-support@lists.sourceforge.net ; Mailing list.
 package-email: packaging@build2.org      ; Mailing list.
-build-email: builds@build2.org
+build-error-email: builds@build2.org
 builds: all
 depends: * build2 >= 0.12.0
 depends: * bpkg >= 0.12.0

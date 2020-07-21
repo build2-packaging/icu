@@ -20,6 +20,11 @@ upstream's fix (commit b7d08bc04a4296982fcef8b6b8a354a9e4e7afca) as a base
 $ cp libicu/uc/unistr.cpp libicu
 $ patch -p0 <libicu/unistr.cpp.patch
 
+And we also fix Clang 10 compilation error:
+
+$ cp libicu/uc/uniset.cpp libicu
+$ patch -p0 <libicu/uniset.cpp.patch
+
 Copy the required upstream auto-generated libicudata source files into
 libicu/data/, replacing '65' with a major version. Here we assume that the
 upstream package is built on the ASCII-based platform with the little-endian

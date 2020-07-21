@@ -1,10 +1,10 @@
 # file      : libicuio/buildfile
 # license   : Unicode License; see accompanying LICENSE file
 
-import int_libs  = libicui18n%lib{icui18n}
-import int_libs += libicuuc%lib{icuuc}
+import intf_libs  = libicui18n%lib{icui18n}
+import intf_libs += libicuuc%lib{icuuc}
 
-lib{icuio}: {hxx cxx}{**} $int_libs
+lib{icuio}: {hxx cxx}{**} $intf_libs
 
 tclass = $cxx.target.class
 tsys   = $cxx.target.system
@@ -91,7 +91,7 @@ switch $tclass, $tsys
 lib{icuio}:
 {
   cc.export.poptions = "-I$src_base/io"
-  cc.export.libs     = $int_libs
+  cc.export.libs     = $intf_libs
 }
 
 liba{icuio}: cc.export.poptions += -DU_STATIC_IMPLEMENTATION

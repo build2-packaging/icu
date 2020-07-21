@@ -1,0 +1,11 @@
+--- libicui18n/i18n/basictz.cpp	2019-12-23 14:38:40.201889324 +0300
++++ libicui18n/basictz.cpp	2020-07-21 15:00:43.322806723 +0300
+@@ -408,7 +408,7 @@ BasicTimeZone::getTimeZoneRulesAfter(UDa
+                 if (!avail) {
+                     break;
+                 }
+-                if (*(tzt0.getTo()) == *tar) {
++                if (tzt0.getTo()->operator==(*tar)) {
+                     break;
+                 }
+                 t = tzt0.getTime();
