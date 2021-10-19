@@ -1,6 +1,6 @@
 : 1
 name: libicuio
-version: 65.1.0+4
+version: 65.1.0+5
 upstream-version: 65.1
 project: icu
 summary: ICU input/output C/C++ library
@@ -13,7 +13,7 @@ src-url: https://git.build2.org/cgit/packaging/icu/icu/tree/libicuio/
 package-url: https://git.build2.org/cgit/packaging/icu/
 email: icu-support@lists.sourceforge.net ; Mailing list.
 package-email: packaging@build2.org      ; Mailing list.
-build-email: builds@build2.org
+build-warning-email: builds@build2.org
 builds: all
 depends: * build2 >= 0.12.0
 depends: * bpkg >= 0.12.0

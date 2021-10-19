@@ -65,7 +65,7 @@ cc.poptions =+ "-I$src_root" "-I$src_base/uc"
 
 obja{*}: cc.poptions += -DU_STATIC_IMPLEMENTATION
 
-switch $c.class, $tsys
+switch $c.class
 {
   case 'gcc'
   {

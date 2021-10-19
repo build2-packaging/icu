@@ -1,10 +1,5 @@
 On the revision:
 
-- Disable the success build emails.
-
-- Fix the switch statements in the buildfiles, replacing 'switch $cxx.class,
-  $tsys' with 'switch $cxx.class'.
-
 On the release:
 
 - Use legal{} target type for legal documentation (LICENSE, AUTHORS, etc).

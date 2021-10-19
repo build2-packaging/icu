@@ -44,7 +44,7 @@ cxx.poptions =+ "-I$src_base/io"
 
 obja{*}: cxx.poptions += -DU_STATIC_IMPLEMENTATION
 
-switch $cxx.class, $tsys
+switch $cxx.class
 {
   case 'gcc'
     cxx.coptions += -fvisibility=hidden

@@ -2,6 +2,18 @@ This document describes how libicuio was packaged for build2. In particular,
 this understanding will be useful when upgrading to a new upstream version.
 See ../README-DEV for general notes on ICU packaging.
 
-Symlink the required upstream directories into libicuio/:
+Symlink the required upstream files and directories into libicuio/io/ and
+apply a patch that fixes the 'unable to find numeric literal operator' GCC 11
+error:
 
-$ ln -s ../../upstream/icu4c/source/io libicuio
+$ mkdir libicuio/io
+$ pushd libicuio/io
+$ ln -s ../../../upstream/icu4c/source/io/{*.{h,cpp},unicode} ./
+$ rm ufile.cpp
+$ cp ../../../upstream/icu4c/source/io/ufile.cpp ./
+$ git apply ufile.cpp.patch
+$ popd
+
+Note that the patch is produces by the following command:
+
+$ git diff >ufile.cpp.patch

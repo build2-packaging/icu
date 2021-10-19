@@ -45,7 +45,7 @@ cxx.poptions =+ "-I$src_base/i18n"
 
 obja{*}: cxx.poptions += -DU_STATIC_IMPLEMENTATION
 
-switch $cxx.class, $tsys
+switch $cxx.class
 {
   case 'gcc'
   {
