@@ -1,4 +1,4 @@
-# file      : build/root.build
+# file      : build/bootstrap.build
 # license   : Unicode License; see accompanying LICENSE file
 
 project = libicuio

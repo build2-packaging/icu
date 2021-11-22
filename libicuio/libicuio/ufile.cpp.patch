@@ -1,7 +1,5 @@
-diff --git a/libicuio/libicuio/io/ufile.cpp b/libicuio/libicuio/io/ufile.cpp
-index 1d8c221..2c00d21 100644
---- a/libicuio/libicuio/io/ufile.cpp
-+++ b/libicuio/libicuio/io/ufile.cpp
+--- libicuio/io/ufile.cpp	2019-12-23 14:38:40.255889178 +0300
++++ libicuio/ufile.cpp	2021-11-22 10:50:17.658962827 +0300
 @@ -21,12 +21,6 @@
  */
  

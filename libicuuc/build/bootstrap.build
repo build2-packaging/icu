@@ -1,4 +1,4 @@
-# file      : build/root.build
+# file      : build/bootstrap.build
 # license   : Unicode License; see accompanying LICENSE file
 
 project = libicuuc
@@ -24,7 +24,7 @@ using dist
 # icu4c/source/configure.ac). The ABI compatibility is preserved for the
 # shared updates. See also:
 #
-# http://userguide.icu-project.org/design#TOC-Version-Numbers-in-ICU
+# https://unicode-org.github.io/icu/userguide/icu/design.html#version-numbers-in-icu
 #
 abi_version_major = "$version.major"
 abi_version_patch = ($version.patch != 0 ? ".$version.patch" : "")

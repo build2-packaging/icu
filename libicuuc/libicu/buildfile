@@ -3,7 +3,7 @@
 
 ./: lib{icuuc} lib{icudata}
 
-patched = ucasemap unistr uniset
+patched = putil ucasemap uniset unistr
 
 lib{icuuc}: uc/hxx{**} uc/cxx{* -{$patched}} cxx{$patched} lib{icudata}
 

@@ -20,6 +20,11 @@ upstream's fix (commit b7d08bc04a4296982fcef8b6b8a354a9e4e7afca) as a base
 $ cp libicu/uc/unistr.cpp libicu
 $ patch -p0 <libicu/unistr.cpp.patch
 
+Also we fix the 'unable to find numeric literal operator' MinGW GCC 11 error:
+
+$ cp libicu/uc/putil.cpp libicu
+$ patch -p0 <libicu/putil.cpp.patch
+
 And we also fix Clang 10 compilation error:
 
 $ cp libicu/uc/uniset.cpp libicu
