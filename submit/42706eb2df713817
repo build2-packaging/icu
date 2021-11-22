@@ -1,0 +1,8 @@
+: 1
+name: libicuio
+version: 65.1.0+6
+upstream-version: 65.1
+project: icu
+summary: ICU input/output C/C++ library
+license: Unicode-DFS-2016 AND BSD-3-Clause AND BSD-2-Clause; Unicode License\
+ Agreement for the most of original files.
