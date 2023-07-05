@@ -5,7 +5,13 @@
 
 patched = putil ucasemap uniset unistr
 
-lib{icuuc}: uc/hxx{**} uc/cxx{* -{$patched}} cxx{$patched} lib{icudata}
+# Note that some of the uc/unicode/*.h files are C++ headers and some are C
+# headers. We will assume all of them as C headers, which is a bit of a hack
+# but doing it properly is too painful.
+#
+lib{icuuc}: uc/hxx{** -unicode/*} uc/unicode/h{*} \
+            uc/cxx{* -{$patched}} cxx{$patched}   \
+            lib{icudata}
 
 lib{icudata}: data/{h c}{*} uc/unicode/h{*}
 
@@ -69,7 +75,7 @@ switch $c.class
 {
   case 'gcc'
   {
-    cc.coptions  += -fvisibility=hidden
+    cc.coptions += -fvisibility=hidden
 
     # Disable warnings that pop up with -Wall -Wextra. Upstream doesn't seem
     # to care about these and it is not easy to disable specific warnings in a
@@ -167,6 +173,6 @@ else
 
 # Install headers from the uc/unicode/ subdirectory only.
 #
-h{*}:              install = false
-hxx{*}:            install = false
-uc/unicode/hxx{*}: install = include/unicode/
+h{*}:            install = false
+hxx{*}:          install = false
+uc/unicode/h{*}: install = include/unicode/

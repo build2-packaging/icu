@@ -71,7 +71,7 @@ switch $cxx.class
 
     # Disable warnings that pop up with /W3.
     #
-    cxx.coptions += /wd4244 /wd4996
+    cxx.coptions += /wd4244 /wd4996 /wd5055 /wd5056
   }
 }
 
