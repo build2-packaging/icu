@@ -1,6 +1,6 @@
 : 1
 name: libicuio
-version: 65.1.0+8
+version: 65.1.0+9
 upstream-version: 65.1
 project: icu
 summary: ICU input/output C/C++ library

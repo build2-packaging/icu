@@ -27,6 +27,9 @@ windows = ($tclass == 'windows')
 
 # Build options.
 #
+# Note that we build without plugins support (UCONFIG_ENABLE_PLUGINS macro is
+# undefined) and thus we don't define the DEFAULT_ICU_PLUGINS macro either.
+#
 cc.poptions  += -DU_ATTRIBUTE_DEPRECATED=
 cxx.poptions += -DU_COMMON_IMPLEMENTATION
 
@@ -101,21 +104,6 @@ switch $c.class
     c.coptions   += /wd4229
     cxx.coptions += /wd4244 /wd4996
   }
-}
-
-# If install.root is specified, then define the DEFAULT_ICU_PLUGINS macro when
-# compiling uc/icuplug.cpp and leave it undefined otherwise.
-#
-if ($install.root != [null])
-{
-  plugins_dir = $install.resolve($install.lib)/icu
-
-  # Escape backslashes and quotes in the directory path prior to representing
-  # it as C++ string literal.
-  #
-  pd = $regex.replace($plugins_dir, '(\\|")', '\\\1')
-
-  uc/obj{icuplug}: cxx.poptions += -DDEFAULT_ICU_PLUGINS="\"$pd\""
 }
 
 switch $tclass, $tsys
