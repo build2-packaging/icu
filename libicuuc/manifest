@@ -1,6 +1,6 @@
 : 1
 name: libicuuc
-version: 65.1.0+9
+version: 65.1.0+10
 upstream-version: 65.1
 project: icu
 summary: ICU basic internationalization C/C++ library
@@ -17,3 +17,8 @@ build-error-email: builds@build2.org
 builds: all
 depends: * build2 >= 0.12.0
 depends: * bpkg >= 0.12.0
+
+# System package mapping.
+#
+debian-name: libicu-dev
+fedora-name: libicu-devel

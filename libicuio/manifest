@@ -1,6 +1,6 @@
 : 1
 name: libicuio
-version: 65.1.0+9
+version: 65.1.0+10
 upstream-version: 65.1
 project: icu
 summary: ICU input/output C/C++ library
@@ -19,3 +19,8 @@ depends: * build2 >= 0.12.0
 depends: * bpkg >= 0.12.0
 depends: libicuuc == $
 depends: libicui18n == $
+
+# System package mapping.
+#
+debian-name: libicu-dev
+fedora-name: libicu-devel
