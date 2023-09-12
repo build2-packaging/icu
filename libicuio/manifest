@@ -19,3 +19,8 @@ depends: * build2 >= 0.12.0
 depends: * bpkg >= 0.12.0
 depends: libicuuc == $
 depends: libicui18n == $
+
+# System package mapping.
+#
+debian-name: libicu-dev
+fedora-name: libicu-devel
