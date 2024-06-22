@@ -3,14 +3,12 @@
 
 ./: lib{icuuc} lib{icudata}
 
-patched = putil ucasemap uniset unistr
-
 # Note that some of the uc/unicode/*.h files are C++ headers and some are C
 # headers. We will assume all of them as C headers, which is a bit of a hack
 # but doing it properly is too painful.
 #
 lib{icuuc}: uc/hxx{** -unicode/*} uc/unicode/h{*} \
-            uc/cxx{* -{$patched}} cxx{$patched}   \
+            uc/cxx{*}                             \
             lib{icudata}
 
 lib{icudata}: data/{h c}{*} uc/unicode/h{*}

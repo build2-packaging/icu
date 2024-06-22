@@ -1,0 +1,387 @@
+diff --git a/libicui18n/libicui18n/i18n/coll.cpp b/libicui18n/libicui18n/i18n/coll.cpp
+index 7b87b41..ee21b95 100644
+--- a/libicui18n/libicui18n/i18n/coll.cpp
++++ b/libicui18n/libicui18n/i18n/coll.cpp
+@@ -33,14 +33,14 @@
+  * 05/06/97     helena      Added memory allocation error detection.
+  * 05/08/97     helena      Added createInstance().
+  *  6/20/97     helena      Java class name change.
+- * 04/23/99     stephen     Removed EDecompositionMode, merged with 
++ * 04/23/99     stephen     Removed EDecompositionMode, merged with
+  *                          Normalizer::EMode
+  * 11/23/9      srl         Inlining of some critical functions
+  * 01/29/01     synwee      Modified into a C++ wrapper calling C APIs (ucol.h)
+  * 2012-2014    markus      Rewritten in C++ again.
+  */
+ 
+-#include "utypeinfo.h"  // for 'typeid' to work 
++#include "utypeinfo.h"  // for 'typeid' to work
+ 
+ #include "unicode/utypes.h"
+ 
+@@ -114,8 +114,8 @@ CollatorFactory::visible(void) const {
+ 
+ //-------------------------------------------
+ 
+-UnicodeString& 
+-CollatorFactory::getDisplayName(const Locale& objectLocale, 
++UnicodeString&
++CollatorFactory::getDisplayName(const Locale& objectLocale,
+                                 const Locale& displayLocale,
+                                 UnicodeString& result)
+ {
+@@ -143,7 +143,7 @@ ICUCollatorFactory::create(const ICUServiceKey& key, const ICUService* /* servic
+         // default LocaleFactory uses currentLocale since that's the one vetted by handlesKey
+         // but for ICU rb resources we use the actual one since it will fallback again
+         lkey.canonicalLocale(loc);
+-        
++
+         return Collator::makeInstance(loc, status);
+     }
+     return NULL;
+@@ -165,7 +165,7 @@ public:
+     virtual UObject* cloneInstance(UObject* instance) const {
+         return ((Collator*)instance)->clone();
+     }
+-    
++
+     virtual UObject* handleDefault(const ICUServiceKey& key, UnicodeString* actualID, UErrorCode& status) const {
+         LocaleKey& lkey = (LocaleKey&)key;
+         if (actualID) {
+@@ -178,7 +178,7 @@ public:
+         lkey.canonicalLocale(loc);
+         return Collator::makeInstance(loc, status);
+     }
+-    
++
+     virtual UObject* getKey(ICUServiceKey& key, UnicodeString* actualReturn, UErrorCode& status) const {
+         UnicodeString ar;
+         if (actualReturn == NULL) {
+@@ -202,7 +202,7 @@ static void U_CALLCONV initService() {
+ }
+ 
+ 
+-static ICULocaleService* 
++static ICULocaleService*
+ getService(void)
+ {
+     umtx_initOnce(gServiceInitOnce, &initService);
+@@ -212,7 +212,7 @@ getService(void)
+ // -------------------------------------
+ 
+ static inline UBool
+-hasService(void) 
++hasService(void)
+ {
+     UBool retVal = !gServiceInitOnce.isReset() && (getService() != NULL);
+     return retVal;
+@@ -220,7 +220,7 @@ hasService(void)
+ 
+ #endif /* UCONFIG_NO_SERVICE */
+ 
+-static void U_CALLCONV 
++static void U_CALLCONV
+ initAvailableLocaleList(UErrorCode &status) {
+     U_ASSERT(availableLocaleListCount == 0);
+     U_ASSERT(availableLocaleList == NULL);
+@@ -228,14 +228,14 @@ initAvailableLocaleList(UErrorCode &status) {
+     UResourceBundle *index = NULL;
+     StackUResourceBundle installed;
+     int32_t i = 0;
+-    
++
+     index = ures_openDirect(U_ICUDATA_COLL, "res_index", &status);
+     ures_getByKey(index, "InstalledLocales", installed.getAlias(), &status);
+ 
+     if(U_SUCCESS(status)) {
+         availableLocaleListCount = ures_getSize(installed.getAlias());
+         availableLocaleList = new Locale[availableLocaleListCount];
+-        
++
+         if (availableLocaleList != NULL) {
+             ures_resetIterator(installed.getAlias());
+             while(ures_hasNext(installed.getAlias())) {
+@@ -372,7 +372,7 @@ void setAttributesFromKeywords(const Locale &loc, Collator &coll, UErrorCode &er
+         return;
+     }
+     if (length != 0) {
+-        int32_t codes[USCRIPT_CODE_LIMIT + UCOL_REORDER_CODE_LIMIT - UCOL_REORDER_CODE_FIRST];
++        int32_t codes[USCRIPT_CODE_LIMIT + (UCOL_REORDER_CODE_LIMIT - UCOL_REORDER_CODE_FIRST)];
+         int32_t codesLength = 0;
+         char *scriptName = value;
+         for (;;) {
+@@ -421,7 +421,7 @@ void setAttributesFromKeywords(const Locale &loc, Collator &coll, UErrorCode &er
+ 
+ }  // namespace
+ 
+-Collator* U_EXPORT2 Collator::createInstance(UErrorCode& success) 
++Collator* U_EXPORT2 Collator::createInstance(UErrorCode& success)
+ {
+     return createInstance(Locale::getDefault(), success);
+ }
+@@ -429,7 +429,7 @@ Collator* U_EXPORT2 Collator::createInstance(UErrorCode& success)
+ Collator* U_EXPORT2 Collator::createInstance(const Locale& desiredLocale,
+                                    UErrorCode& status)
+ {
+-    if (U_FAILURE(status)) 
++    if (U_FAILURE(status))
+         return 0;
+     if (desiredLocale.isBogus()) {
+         // Locale constructed from malformed locale ID or language tag.
+@@ -488,7 +488,7 @@ Collator::safeClone() const {
+ }
+ 
+ // implement deprecated, previously abstract method
+-Collator::EComparisonResult Collator::compare(const UnicodeString& source, 
++Collator::EComparisonResult Collator::compare(const UnicodeString& source,
+                                     const UnicodeString& target) const
+ {
+     UErrorCode ec = U_ZERO_ERROR;
+@@ -506,7 +506,7 @@ Collator::EComparisonResult Collator::compare(const UnicodeString& source,
+ 
+ // implement deprecated, previously abstract method
+ Collator::EComparisonResult Collator::compare(const UChar* source, int32_t sourceLength,
+-                                    const UChar* target, int32_t targetLength) 
++                                    const UChar* target, int32_t targetLength)
+                                     const
+ {
+     UErrorCode ec = U_ZERO_ERROR;
+@@ -535,21 +535,21 @@ UCollationResult Collator::compareUTF8(const StringPiece &source,
+     return compare(sIter, tIter, status);
+ }
+ 
+-UBool Collator::equals(const UnicodeString& source, 
++UBool Collator::equals(const UnicodeString& source,
+                        const UnicodeString& target) const
+ {
+     UErrorCode ec = U_ZERO_ERROR;
+     return (compare(source, target, ec) == UCOL_EQUAL);
+ }
+ 
+-UBool Collator::greaterOrEqual(const UnicodeString& source, 
++UBool Collator::greaterOrEqual(const UnicodeString& source,
+                                const UnicodeString& target) const
+ {
+     UErrorCode ec = U_ZERO_ERROR;
+     return (compare(source, target, ec) != UCOL_LESS);
+ }
+ 
+-UBool Collator::greater(const UnicodeString& source, 
++UBool Collator::greater(const UnicodeString& source,
+                         const UnicodeString& target) const
+ {
+     UErrorCode ec = U_ZERO_ERROR;
+@@ -558,7 +558,7 @@ UBool Collator::greater(const UnicodeString& source,
+ 
+ // this API  ignores registered collators, since it returns an
+ // array of indefinite lifetime
+-const Locale* U_EXPORT2 Collator::getAvailableLocales(int32_t& count) 
++const Locale* U_EXPORT2 Collator::getAvailableLocales(int32_t& count)
+ {
+     UErrorCode status = U_ZERO_ERROR;
+     Locale *result = NULL;
+@@ -587,7 +587,7 @@ UnicodeString& U_EXPORT2 Collator::getDisplayName(const Locale& objectLocale,
+ 
+ UnicodeString& U_EXPORT2 Collator::getDisplayName(const Locale& objectLocale,
+                                         UnicodeString& name)
+-{   
++{
+     return getDisplayName(objectLocale, Locale::getDefault(), name);
+ }
+ 
+@@ -616,7 +616,7 @@ Collator::Collator()
+ * Constructor.
+ * Empty constructor, does not handle the arguments.
+ * This constructor is done for backward compatibility with 1.7 and 1.8.
+-* The task for handling the argument collation strength and normalization 
++* The task for handling the argument collation strength and normalization
+ * mode is left to the child class.
+ * @param collationStrength collation strength
+ * @param decompositionMode
+@@ -675,7 +675,7 @@ UnicodeSet *Collator::getTailoredSet(UErrorCode &status) const
+ 
+ #if !UCONFIG_NO_SERVICE
+ URegistryKey U_EXPORT2
+-Collator::registerInstance(Collator* toAdopt, const Locale& locale, UErrorCode& status) 
++Collator::registerInstance(Collator* toAdopt, const Locale& locale, UErrorCode& status)
+ {
+     if (U_SUCCESS(status)) {
+         // Set the collator locales while registering so that createInstance()
+@@ -693,9 +693,9 @@ class CFactory : public LocaleKeyFactory {
+ private:
+     CollatorFactory* _delegate;
+     Hashtable* _ids;
+-    
++
+ public:
+-    CFactory(CollatorFactory* delegate, UErrorCode& status) 
++    CFactory(CollatorFactory* delegate, UErrorCode& status)
+         : LocaleKeyFactory(delegate->visible() ? VISIBLE : INVISIBLE)
+         , _delegate(delegate)
+         , _ids(NULL)
+@@ -722,7 +722,7 @@ public:
+     virtual ~CFactory();
+ 
+     virtual UObject* create(const ICUServiceKey& key, const ICUService* service, UErrorCode& status) const;
+-    
++
+ protected:
+     virtual const Hashtable* getSupportedIDs(UErrorCode& status) const
+     {
+@@ -731,7 +731,7 @@ protected:
+         }
+         return NULL;
+     }
+-    
++
+     virtual UnicodeString&
+         getDisplayName(const UnicodeString& id, const Locale& locale, UnicodeString& result) const;
+ };
+@@ -742,7 +742,7 @@ CFactory::~CFactory()
+     delete _ids;
+ }
+ 
+-UObject* 
++UObject*
+ CFactory::create(const ICUServiceKey& key, const ICUService* /* service */, UErrorCode& status) const
+ {
+     if (handlesKey(key, status)) {
+@@ -755,7 +755,7 @@ CFactory::create(const ICUServiceKey& key, const ICUService* /* service */, UErr
+ }
+ 
+ UnicodeString&
+-CFactory::getDisplayName(const UnicodeString& id, const Locale& locale, UnicodeString& result) const 
++CFactory::getDisplayName(const UnicodeString& id, const Locale& locale, UnicodeString& result) const
+ {
+     if ((_coverage & 0x1) == 0) {
+         UErrorCode status = U_ZERO_ERROR;
+@@ -786,7 +786,7 @@ Collator::registerFactory(CollatorFactory* toAdopt, UErrorCode& status)
+ // -------------------------------------
+ 
+ UBool U_EXPORT2
+-Collator::unregister(URegistryKey key, UErrorCode& status) 
++Collator::unregister(URegistryKey key, UErrorCode& status)
+ {
+     if (U_SUCCESS(status)) {
+         if (hasService()) {
+diff --git a/libicui18n/libicui18n/i18n/collationdata.h b/libicui18n/libicui18n/i18n/collationdata.h
+index ab9b4c4..71bf17a 100644
+--- a/libicui18n/libicui18n/i18n/collationdata.h
++++ b/libicui18n/libicui18n/i18n/collationdata.h
+@@ -41,16 +41,12 @@ struct U_I18N_API CollationData : public UMemory {
+     // Note: The ucadata.icu loader could discover the reserved ranges by setting an array
+     // parallel with the ranges, and resetting ranges that are indexed.
+     // The reordering builder code could clone the resulting template array.
+-    enum {
+-        REORDER_RESERVED_BEFORE_LATIN = UCOL_REORDER_CODE_FIRST + 14,
+-        REORDER_RESERVED_AFTER_LATIN
+-    };
+-
+-    enum {
+-        MAX_NUM_SPECIAL_REORDER_CODES = 8,
+-        /** C++ only, data reader check scriptStartsLength. */
+-        MAX_NUM_SCRIPT_RANGES = 256
+-    };
++    static constexpr int32_t REORDER_RESERVED_BEFORE_LATIN = UCOL_REORDER_CODE_FIRST + 14;
++    static constexpr int32_t REORDER_RESERVED_AFTER_LATIN = REORDER_RESERVED_BEFORE_LATIN + 1;
++
++    static constexpr int32_t MAX_NUM_SPECIAL_REORDER_CODES = 8;
++    /** C++ only, data reader check scriptStartsLength. */
++    static constexpr int32_t MAX_NUM_SCRIPT_RANGES = 256;
+ 
+     CollationData(const Normalizer2Impl &nfc)
+             : trie(NULL),
+diff --git a/libicui18n/libicui18n/i18n/collationdatareader.cpp b/libicui18n/libicui18n/i18n/collationdatareader.cpp
+index 0eb1861..ee95b37 100644
+--- a/libicui18n/libicui18n/i18n/collationdatareader.cpp
++++ b/libicui18n/libicui18n/i18n/collationdatareader.cpp
+@@ -436,7 +436,7 @@ CollationDataReader::read(const CollationTailoring *base, const uint8_t *inBytes
+     settings->options = options;
+     // Set variableTop from options and scripts data.
+     settings->variableTop = tailoring.data->getLastPrimaryForGroup(
+-            UCOL_REORDER_CODE_FIRST + settings->getMaxVariable());
++      UCOL_REORDER_CODE_FIRST + int32_t{settings->getMaxVariable()});
+     if(settings->variableTop == 0) {
+         errorCode = U_INVALID_FORMAT_ERROR;
+         return;
+diff --git a/libicui18n/libicui18n/i18n/gregoimp.cpp b/libicui18n/libicui18n/i18n/gregoimp.cpp
+index 537aa19..9779c40 100644
+--- a/libicui18n/libicui18n/i18n/gregoimp.cpp
++++ b/libicui18n/libicui18n/i18n/gregoimp.cpp
+@@ -116,9 +116,9 @@ void Grego::dayToFields(double day, int32_t& year, int32_t& month,
+     } else {
+         ++year;
+     }
+-    
++
+     UBool isLeap = isLeapYear(year);
+-    
++
+     // Gregorian day zero is a Monday.
+     dow = (int32_t) uprv_fmod(day + 1, 7);
+     dow += (dow < 0) ? (UCAL_SUNDAY + 7) : UCAL_SUNDAY;
+@@ -144,7 +144,7 @@ void Grego::timeToFields(UDate time, int32_t& year, int32_t& month,
+ 
+ int32_t Grego::dayOfWeek(double day) {
+     int32_t dow;
+-    ClockMath::floorDivide(day + UCAL_THURSDAY, 7, dow);
++    ClockMath::floorDivide(day + int{UCAL_THURSDAY}, 7, dow);
+     return (dow == 0) ? UCAL_SATURDAY : dow;
+ }
+ 
+diff --git a/libicui18n/libicui18n/i18n/rulebasedcollator.cpp b/libicui18n/libicui18n/i18n/rulebasedcollator.cpp
+index 60acf17..1bd150a 100644
+--- a/libicui18n/libicui18n/i18n/rulebasedcollator.cpp
++++ b/libicui18n/libicui18n/i18n/rulebasedcollator.cpp
+@@ -538,7 +538,7 @@ RuleBasedCollator::setMaxVariable(UColReorderCode group, UErrorCode &errorCode)
+     }
+ 
+     if(group == UCOL_REORDER_CODE_DEFAULT) {
+-        group = (UColReorderCode)(UCOL_REORDER_CODE_FIRST + defaultSettings.getMaxVariable());
++        group = (UColReorderCode)(UCOL_REORDER_CODE_FIRST + int32_t{defaultSettings.getMaxVariable()});
+     }
+     uint32_t varTop = data->getLastPrimaryForGroup(group);
+     U_ASSERT(varTop != 0);
+@@ -556,7 +556,7 @@ RuleBasedCollator::setMaxVariable(UColReorderCode group, UErrorCode &errorCode)
+ 
+ UColReorderCode
+ RuleBasedCollator::getMaxVariable() const {
+-    return (UColReorderCode)(UCOL_REORDER_CODE_FIRST + settings->getMaxVariable());
++    return (UColReorderCode)(UCOL_REORDER_CODE_FIRST + int32_t{settings->getMaxVariable()});
+ }
+ 
+ uint32_t
+diff --git a/libicui18n/libicui18n/i18n/unicode/calendar.h b/libicui18n/libicui18n/i18n/unicode/calendar.h
+index 2a8c293..9ef1b1a 100644
+--- a/libicui18n/libicui18n/i18n/unicode/calendar.h
++++ b/libicui18n/libicui18n/i18n/unicode/calendar.h
+@@ -1764,16 +1764,22 @@ protected:
+     int32_t newestStamp(UCalendarDateFields start, UCalendarDateFields end, int32_t bestSoFar) const;
+ 
+     /**
+-     * Values for field resolution tables
++     * Marker for end of resolve set (row or group). Value for field resolution tables.
++     *
+      * @see #resolveFields
+      * @internal
+      */
+-    enum {
+-      /** Marker for end of resolve set (row or group). */
+-      kResolveSTOP = -1,
+-      /** Value to be bitwised "ORed" against resolve table field values for remapping.  Example: (UCAL_DATE | kResolveRemap) in 1st column will cause 'UCAL_DATE' to be returned, but will not examine the value of UCAL_DATE.  */
+-      kResolveRemap = 32
+-    };
++    static constexpr int32_t kResolveSTOP = -1;
++    /**
++     * Value to be bitwised "ORed" against resolve table field values for remapping.
++     * Example: (UCAL_DATE | kResolveRemap) in 1st column will cause 'UCAL_DATE' to be returned,
++     * but will not examine the value of UCAL_DATE.
++     * Value for field resolution tables.
++     *
++     * @see #resolveFields
++     * @internal
++     */
++    static constexpr int32_t kResolveRemap = 32;
+ 
+     /**
+      * Precedence table for Dates

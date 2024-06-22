@@ -1,0 +1,1 @@
+../../../upstream/icu4c/source/common/norm2_nfc_data.h

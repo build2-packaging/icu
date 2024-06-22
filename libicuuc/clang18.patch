@@ -1,0 +1,220 @@
+diff --git a/libicuuc/libicu/uc/characterproperties.cpp b/libicuuc/libicu/uc/characterproperties.cpp
+index 7b50a4e..bd547e3 100644
+--- a/libicuuc/libicu/uc/characterproperties.cpp
++++ b/libicuuc/libicu/uc/characterproperties.cpp
+@@ -35,7 +35,7 @@ namespace {
+ 
+ UBool U_CALLCONV characterproperties_cleanup();
+ 
+-constexpr int32_t NUM_INCLUSIONS = UPROPS_SRC_COUNT + UCHAR_INT_LIMIT - UCHAR_INT_START;
++constexpr int32_t NUM_INCLUSIONS = UPROPS_SRC_COUNT + (UCHAR_INT_LIMIT - UCHAR_INT_START);
+ 
+ struct Inclusion {
+     UnicodeSet  *fSet = nullptr;
+@@ -202,7 +202,7 @@ const UnicodeSet *getInclusionsForSource(UPropertySource src, UErrorCode &errorC
+ void U_CALLCONV initIntPropInclusion(UProperty prop, UErrorCode &errorCode) {
+     // This function is invoked only via umtx_initOnce().
+     U_ASSERT(UCHAR_INT_START <= prop && prop < UCHAR_INT_LIMIT);
+-    int32_t inclIndex = UPROPS_SRC_COUNT + prop - UCHAR_INT_START;
++    int32_t inclIndex = UPROPS_SRC_COUNT + (prop - UCHAR_INT_START);
+     U_ASSERT(gInclusions[inclIndex].fSet == nullptr);
+     UPropertySource src = uprops_getSource(prop);
+     const UnicodeSet *incl = getInclusionsForSource(src, errorCode);
+@@ -247,7 +247,7 @@ const UnicodeSet *CharacterProperties::getInclusionsForProperty(
+         UProperty prop, UErrorCode &errorCode) {
+     if (U_FAILURE(errorCode)) { return nullptr; }
+     if (UCHAR_INT_START <= prop && prop < UCHAR_INT_LIMIT) {
+-        int32_t inclIndex = UPROPS_SRC_COUNT + prop - UCHAR_INT_START;
++      int32_t inclIndex = UPROPS_SRC_COUNT + (prop - UCHAR_INT_START);
+         Inclusion &i = gInclusions[inclIndex];
+         umtx_initOnce(i.fInitOnce, &initIntPropInclusion, prop, errorCode);
+         return i.fSet;
+diff --git a/libicuuc/libicu/uc/ruleiter.h b/libicuuc/libicu/uc/ruleiter.h
+index 4e1be53..4056cf3 100644
+--- a/libicuuc/libicu/uc/ruleiter.h
++++ b/libicuuc/libicu/uc/ruleiter.h
+@@ -39,7 +39,7 @@ class RuleCharacterIterator : public UMemory {
+ private:
+     /**
+      * Text being iterated.
+-     */    
++     */
+     const UnicodeString& text;
+ 
+     /**
+@@ -51,7 +51,7 @@ private:
+      * Symbol table used to parse and dereference variables.  May be 0.
+      */
+     const SymbolTable* sym;
+-    
++
+     /**
+      * Current variable expansion, or 0 if none.
+      */
+@@ -66,28 +66,28 @@ public:
+     /**
+      * Value returned when there are no more characters to iterate.
+      */
+-    enum { DONE = -1 };
++    static constexpr int32_t DONE = -1;
+ 
+     /**
+      * Bitmask option to enable parsing of variable names.  If (options &
+      * PARSE_VARIABLES) != 0, then an embedded variable will be expanded to
+      * its value.  Variables are parsed using the SymbolTable API.
+      */
+-    enum { PARSE_VARIABLES = 1 };
++    static constexpr int32_t PARSE_VARIABLES = 1;
+ 
+     /**
+      * Bitmask option to enable parsing of escape sequences.  If (options &
+      * PARSE_ESCAPES) != 0, then an embedded escape sequence will be expanded
+      * to its value.  Escapes are parsed using Utility.unescapeAt().
+      */
+-    enum { PARSE_ESCAPES   = 2 };
++    static constexpr int32_t PARSE_ESCAPES   = 2;
+ 
+     /**
+      * Bitmask option to enable skipping of whitespace.  If (options &
+      * SKIP_WHITESPACE) != 0, then Pattern_White_Space characters will be silently
+      * skipped, as if they were not present in the input.
+      */
+-    enum { SKIP_WHITESPACE = 4 };
++    static constexpr int32_t SKIP_WHITESPACE = 4;
+ 
+     /**
+      * Constructs an iterator over the given text, starting at the given
+@@ -102,7 +102,7 @@ public:
+      */
+     RuleCharacterIterator(const UnicodeString& text, const SymbolTable* sym,
+                           ParsePosition& pos);
+-    
++
+     /**
+      * Returns true if this iterator has no more characters to return.
+      */
+@@ -207,7 +207,7 @@ public:
+      * representation of this object
+      */
+ //    UnicodeString& toString(UnicodeString& result) const;
+-    
++
+ private:
+     /**
+      * Returns the current 32-bit code point without parsing escapes, parsing
+@@ -215,7 +215,7 @@ private:
+      * @return the current 32-bit code point
+      */
+     UChar32 _current() const;
+-    
++
+     /**
+      * Advances the position by the given amount.
+      * @param count the number of 16-bit code units to advance past
+diff --git a/libicuuc/libicu/uc/ucptrie_impl.h b/libicuuc/libicu/uc/ucptrie_impl.h
+index 1fe6a18..2fac77d 100644
+--- a/libicuuc/libicu/uc/ucptrie_impl.h
++++ b/libicuuc/libicu/uc/ucptrie_impl.h
+@@ -73,61 +73,61 @@ enum {
+ };
+ 
+ // Internal constants.
+-enum {
+-    /** The length of the BMP index table. 1024=0x400 */
+-    UCPTRIE_BMP_INDEX_LENGTH = 0x10000 >> UCPTRIE_FAST_SHIFT,
+ 
+-    UCPTRIE_SMALL_LIMIT = 0x1000,
+-    UCPTRIE_SMALL_INDEX_LENGTH = UCPTRIE_SMALL_LIMIT >> UCPTRIE_FAST_SHIFT,
++/** The length of the BMP index table. 1024=0x400 */
++constexpr int32_t UCPTRIE_BMP_INDEX_LENGTH = 0x10000 >> UCPTRIE_FAST_SHIFT;
+ 
+-    /** Shift size for getting the index-3 table offset. */
+-    UCPTRIE_SHIFT_3 = 4,
++constexpr int32_t UCPTRIE_SMALL_LIMIT = 0x1000;
++constexpr int32_t UCPTRIE_SMALL_INDEX_LENGTH = UCPTRIE_SMALL_LIMIT >> UCPTRIE_FAST_SHIFT;
+ 
+-    /** Shift size for getting the index-2 table offset. */
+-    UCPTRIE_SHIFT_2 = 5 + UCPTRIE_SHIFT_3,
++/** Shift size for getting the index-3 table offset. */
++constexpr int32_t UCPTRIE_SHIFT_3 = 4;
+ 
+-    /** Shift size for getting the index-1 table offset. */
+-    UCPTRIE_SHIFT_1 = 5 + UCPTRIE_SHIFT_2,
++/** Shift size for getting the index-2 table offset. */
++constexpr int32_t UCPTRIE_SHIFT_2 = 5 + UCPTRIE_SHIFT_3;
+ 
+-    /**
+-     * Difference between two shift sizes,
+-     * for getting an index-2 offset from an index-3 offset. 5=9-4
+-     */
+-    UCPTRIE_SHIFT_2_3 = UCPTRIE_SHIFT_2 - UCPTRIE_SHIFT_3,
++/** Shift size for getting the index-1 table offset. */
++constexpr int32_t UCPTRIE_SHIFT_1 = 5 + UCPTRIE_SHIFT_2;
+ 
+-    /**
+-     * Difference between two shift sizes,
+-     * for getting an index-1 offset from an index-2 offset. 5=14-9
+-     */
+-    UCPTRIE_SHIFT_1_2 = UCPTRIE_SHIFT_1 - UCPTRIE_SHIFT_2,
++/**
++ * Difference between two shift sizes,
++ * for getting an index-2 offset from an index-3 offset. 5=9-4
++ */
++constexpr int32_t UCPTRIE_SHIFT_2_3 = UCPTRIE_SHIFT_2 - UCPTRIE_SHIFT_3;
+ 
+-    /**
+-     * Number of index-1 entries for the BMP. (4)
+-     * This part of the index-1 table is omitted from the serialized form.
+-     */
+-    UCPTRIE_OMITTED_BMP_INDEX_1_LENGTH = 0x10000 >> UCPTRIE_SHIFT_1,
++/**
++ * Difference between two shift sizes,
++ * for getting an index-1 offset from an index-2 offset. 5=14-9
++ */
++constexpr int32_t UCPTRIE_SHIFT_1_2 = UCPTRIE_SHIFT_1 - UCPTRIE_SHIFT_2;
++
++/**
++ * Number of index-1 entries for the BMP. (4)
++ * This part of the index-1 table is omitted from the serialized form.
++ */
++constexpr int32_t UCPTRIE_OMITTED_BMP_INDEX_1_LENGTH = 0x10000 >> UCPTRIE_SHIFT_1;
+ 
+-    /** Number of entries in an index-2 block. 32=0x20 */
+-    UCPTRIE_INDEX_2_BLOCK_LENGTH = 1 << UCPTRIE_SHIFT_1_2,
++/** Number of entries in an index-2 block. 32=0x20 */
++constexpr int32_t UCPTRIE_INDEX_2_BLOCK_LENGTH = 1 << UCPTRIE_SHIFT_1_2;
+ 
+-    /** Mask for getting the lower bits for the in-index-2-block offset. */
+-    UCPTRIE_INDEX_2_MASK = UCPTRIE_INDEX_2_BLOCK_LENGTH - 1,
++/** Mask for getting the lower bits for the in-index-2-block offset. */
++constexpr int32_t UCPTRIE_INDEX_2_MASK = UCPTRIE_INDEX_2_BLOCK_LENGTH - 1;
+ 
+-    /** Number of code points per index-2 table entry. 512=0x200 */
+-    UCPTRIE_CP_PER_INDEX_2_ENTRY = 1 << UCPTRIE_SHIFT_2,
++/** Number of code points per index-2 table entry. 512=0x200 */
++constexpr int32_t UCPTRIE_CP_PER_INDEX_2_ENTRY = 1 << UCPTRIE_SHIFT_2;
+ 
+-    /** Number of entries in an index-3 block. 32=0x20 */
+-    UCPTRIE_INDEX_3_BLOCK_LENGTH = 1 << UCPTRIE_SHIFT_2_3,
++/** Number of entries in an index-3 block. 32=0x20 */
++constexpr int32_t UCPTRIE_INDEX_3_BLOCK_LENGTH = 1 << UCPTRIE_SHIFT_2_3;
+ 
+-    /** Mask for getting the lower bits for the in-index-3-block offset. */
+-    UCPTRIE_INDEX_3_MASK = UCPTRIE_INDEX_3_BLOCK_LENGTH - 1,
++/** Mask for getting the lower bits for the in-index-3-block offset. */
++constexpr int32_t UCPTRIE_INDEX_3_MASK = UCPTRIE_INDEX_3_BLOCK_LENGTH - 1;
+ 
+-    /** Number of entries in a small data block. 16=0x10 */
+-    UCPTRIE_SMALL_DATA_BLOCK_LENGTH = 1 << UCPTRIE_SHIFT_3,
++/** Number of entries in a small data block. 16=0x10 */
++constexpr int32_t UCPTRIE_SMALL_DATA_BLOCK_LENGTH = 1 << UCPTRIE_SHIFT_3;
++
++/** Mask for getting the lower bits for the in-small-data-block offset. */
++constexpr int32_t UCPTRIE_SMALL_DATA_MASK = UCPTRIE_SMALL_DATA_BLOCK_LENGTH - 1;
+ 
+-    /** Mask for getting the lower bits for the in-small-data-block offset. */
+-    UCPTRIE_SMALL_DATA_MASK = UCPTRIE_SMALL_DATA_BLOCK_LENGTH - 1
+-};
+ 
+ typedef UChar32
+ UCPTrieGetRange(const void *trie, UChar32 start,

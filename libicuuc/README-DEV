@@ -2,33 +2,60 @@ This document describes how libicuuc and libicudata were packaged for build2.
 In particular, this understanding will be useful when upgrading to a new
 upstream version. See ../README-DEV for general notes on ICU packaging.
 
-Symlink the required upstream directories into libicu/:
+Symlink the required upstream files into libicu/uc:
 
-$ ln -s ../../upstream/icu4c/source/common libicu/uc
+$ mkdir -p libicu/uc
+$ pushd libicu/uc
+$ ln -s ../../../upstream/icu4c/source/common/*.{cpp,h} .
+$ mkdir unicode
+$ cd unicode
+$ ln -s ../../../../upstream/icu4c/source/common/unicode/*.h .
+$ popd
 
-Compiling against the latest C++ standard ends up with the "invalid conversion
-from ‘const char8_t*’ to ‘const char*’" errors for libicu/uc/ucasemap.cpp and
-so we patch it:
+We also apply the following patches:
 
-$ cp libicu/uc/ucasemap.cpp libicu
-$ patch -p0 <libicu/ucasemap.cpp.patch
+1) Fix the "invalid conversion from ‘const char8_t*’ to ‘const char*’" errors:
 
-Also we fix a security issue CVE-2020-10531 reported by Debian using the
-upstream's fix (commit b7d08bc04a4296982fcef8b6b8a354a9e4e7afca) as a base
-(dropping the test changes):
+   $ mv libicu/uc/ucasemap.cpp libicu/uc/ucasemap.cpp.orig
+   $ cp libicu/uc/ucasemap.cpp.orig libicu/uc/ucasemap.cpp
+   $ git apply invalid-conversion-char8_t.patch
 
-$ cp libicu/uc/unistr.cpp libicu
-$ patch -p0 <libicu/unistr.cpp.patch
+2) Fix a security issue CVE-2020-10531 reported by Debian using the upstream's
+   fix (commit b7d08bc04a4296982fcef8b6b8a354a9e4e7afca) as a base (dropping
+   the test changes):
 
-Also we fix the 'unable to find numeric literal operator' MinGW GCC 11 error:
+   $ mv libicu/uc/unistr.cpp libicu/uc/unistr.cpp.orig
+   $ cp libicu/uc/unistr.cpp.orig libicu/uc/unistr.cpp
+   $ git apply CVE-2020-10531.patch
 
-$ cp libicu/uc/putil.cpp libicu
-$ patch -p0 <libicu/putil.cpp.patch
+3) Fix the 'unable to find numeric literal operator' MinGW GCC 11 error:
 
-And we also fix Clang 10 compilation error:
+   $ mv libicu/uc/putil.cpp libicu/uc/putil.cpp.orig
+   $ cp libicu/uc/putil.cpp.orig libicu/uc/putil.cpp
+   $ git apply unable-find-num-literal-op.patch
 
-$ cp libicu/uc/uniset.cpp libicu
-$ patch -p0 <libicu/uniset.cpp.patch
+4) Fix Clang 10 compilation error:
+
+   $ mv libicu/uc/uniset.cpp libicu/uc/uniset.cpp.orig
+   $ cp libicu/uc/uniset.cpp.orig libicu/uc/uniset.cpp
+   $ git apply clang10.patch
+
+5) Fix Clang 18 compilation errors:
+
+   $ mv libicu/uc/characterproperties.cpp libicu/uc/characterproperties.cpp.orig
+   $ cp libicu/uc/characterproperties.cpp.orig libicu/uc/characterproperties.cpp
+
+   $ mv libicu/uc/ucptrie_impl.h libicu/uc/ucptrie_impl.h.orig
+   $ cp libicu/uc/ucptrie_impl.h.orig libicu/uc/ucptrie_impl.h
+
+   $ mv libicu/uc/ruleiter.h libicu/uc/ruleiter.h.orig
+   $ cp libicu/uc/ruleiter.h.orig libicu/uc/ruleiter.h
+
+   $ git apply clang18.patch
+
+Note that the above patches are produced by the following commands:
+
+$ git diff ><patch-path>
 
 Copy the required upstream auto-generated libicudata source files into
 libicu/data/, replacing '65' with a major version. Here we assume that the

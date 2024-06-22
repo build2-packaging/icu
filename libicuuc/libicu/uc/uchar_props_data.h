@@ -1,0 +1,1 @@
+../../../upstream/icu4c/source/common/uchar_props_data.h

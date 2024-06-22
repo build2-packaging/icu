@@ -3,9 +3,7 @@
 
 import intf_libs = libicuuc%lib{icuuc}
 
-patched = stsearch olsontz vtzone rbtz dtitvfmt basictz fmtable
-
-lib{icui18n}: {hxx}{**} i18n/cxx{* -{$patched}} cxx{$patched} $intf_libs
+lib{icui18n}: {hxx}{**} i18n/cxx{*} $intf_libs
 
 tclass = $cxx.target.class
 tsys   = $cxx.target.system

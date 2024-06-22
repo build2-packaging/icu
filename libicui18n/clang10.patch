@@ -1,0 +1,121 @@
+diff --git a/libicui18n/README-DEV b/libicui18n/README-DEV
+index 4c7ee90..1257b09 100644
+--- a/libicui18n/README-DEV
++++ b/libicui18n/README-DEV
+@@ -34,3 +34,7 @@ $ cp libicui18n/i18n/basictz.cpp.orig libicui18n/i18n/basictz.cpp
+ 
+ $ mv libicui18n/i18n/fmtable.cpp libicui18n/i18n/fmtable.cpp.orig
+ $ cp libicui18n/i18n/fmtable.cpp.orig libicui18n/i18n/fmtable.cpp
++
++Note that the above patches are produced by the following commands:
++
++$ git diff ><patch-path>
+diff --git a/libicui18n/libicui18n/i18n/basictz.cpp b/libicui18n/libicui18n/i18n/basictz.cpp
+index 54ee5a1..430cb56 100644
+--- a/libicui18n/libicui18n/i18n/basictz.cpp
++++ b/libicui18n/libicui18n/i18n/basictz.cpp
+@@ -408,7 +408,7 @@ BasicTimeZone::getTimeZoneRulesAfter(UDate start, InitialTimeZoneRule*& initial,
+                 if (!avail) {
+                     break;
+                 }
+-                if (*(tzt0.getTo()) == *tar) {
++                if (tzt0.getTo()->operator==(*tar)) {
+                     break;
+                 }
+                 t = tzt0.getTime();
+diff --git a/libicui18n/libicui18n/i18n/dtitvfmt.cpp b/libicui18n/libicui18n/i18n/dtitvfmt.cpp
+index f47e770..db6d1c3 100644
+--- a/libicui18n/libicui18n/i18n/dtitvfmt.cpp
++++ b/libicui18n/libicui18n/i18n/dtitvfmt.cpp
+@@ -232,7 +232,7 @@ DateIntervalFormat::operator==(const Format& other) const {
+     {
+         Mutex lock(&gFormatterMutex);
+         if (fDateFormat != fmt->fDateFormat && (fDateFormat == NULL || fmt->fDateFormat == NULL)) {return FALSE;}
+-        if (fDateFormat && fmt->fDateFormat && (*fDateFormat != *fmt->fDateFormat)) {return FALSE;}
++        if (fDateFormat && fmt->fDateFormat && !(*fDateFormat == *fmt->fDateFormat)) {return FALSE;}
+     }
+     // note: fFromCalendar and fToCalendar hold no persistent state, and therefore do not participate in operator ==.
+     //       fDateFormat has the master calendar for the DateIntervalFormat.
+diff --git a/libicui18n/libicui18n/i18n/fmtable.cpp b/libicui18n/libicui18n/i18n/fmtable.cpp
+index dbfd3c2..8c821d3 100644
+--- a/libicui18n/libicui18n/i18n/fmtable.cpp
++++ b/libicui18n/libicui18n/i18n/fmtable.cpp
+@@ -56,7 +56,7 @@ using number::impl::DecimalQuantity;
+ // Return TRUE if *a == *b.
+ static inline UBool objectEquals(const UObject* a, const UObject* b) {
+     // LATER: return *a == *b;
+-    return *((const Measure*) a) == *((const Measure*) b);
++    return ((const Measure*) a)->operator== (*((const Measure*) b));
+ }
+ 
+ // Return a clone of *a.
+diff --git a/libicui18n/libicui18n/i18n/olsontz.cpp b/libicui18n/libicui18n/i18n/olsontz.cpp
+index d21e6e9..85bb737 100644
+--- a/libicui18n/libicui18n/i18n/olsontz.cpp
++++ b/libicui18n/libicui18n/i18n/olsontz.cpp
+@@ -624,7 +624,7 @@ OlsonTimeZone::hasSameRules(const TimeZone &other) const {
+     // be equal if their rules and transitions are equal
+     if ((finalZone == NULL && z->finalZone != NULL)
+         || (finalZone != NULL && z->finalZone == NULL)
+-        || (finalZone != NULL && z->finalZone != NULL && *finalZone != *z->finalZone)) {
++        || (finalZone != NULL && z->finalZone != NULL && !(*finalZone == *z->finalZone))) {
+         return FALSE;
+     }
+ 
+diff --git a/libicui18n/libicui18n/i18n/rbtz.cpp b/libicui18n/libicui18n/i18n/rbtz.cpp
+index 3249a32..6725d36 100644
+--- a/libicui18n/libicui18n/i18n/rbtz.cpp
++++ b/libicui18n/libicui18n/i18n/rbtz.cpp
+@@ -76,7 +76,7 @@ RuleBasedTimeZone::~RuleBasedTimeZone() {
+ 
+ RuleBasedTimeZone&
+ RuleBasedTimeZone::operator=(const RuleBasedTimeZone& right) {
+-    if (*this != right) {
++    if (!(*this == right)) {
+         BasicTimeZone::operator=(right);
+         deleteRules();
+         fInitialRule = right.fInitialRule->clone();
+@@ -98,7 +98,7 @@ RuleBasedTimeZone::operator==(const TimeZone& that) const {
+         return FALSE;
+     }
+     RuleBasedTimeZone *rbtz = (RuleBasedTimeZone*)&that;
+-    if (*fInitialRule != *(rbtz->fInitialRule)) {
++    if (!(*fInitialRule == *(rbtz->fInitialRule))) {
+         return FALSE;
+     }
+     if (compareRules(fHistoricRules, rbtz->fHistoricRules)
+@@ -532,7 +532,7 @@ RuleBasedTimeZone::hasSameRules(const TimeZone& other) const {
+         return FALSE;
+     }
+     const RuleBasedTimeZone& that = (const RuleBasedTimeZone&)other;
+-    if (*fInitialRule != *(that.fInitialRule)) {
++    if (!(*fInitialRule == *(that.fInitialRule))) {
+         return FALSE;
+     }
+     if (compareRules(fHistoricRules, that.fHistoricRules)
+diff --git a/libicui18n/libicui18n/i18n/stsearch.cpp b/libicui18n/libicui18n/i18n/stsearch.cpp
+index 3e6ed46..a107194 100644
+--- a/libicui18n/libicui18n/i18n/stsearch.cpp
++++ b/libicui18n/libicui18n/i18n/stsearch.cpp
+@@ -184,7 +184,7 @@ StringSearch::clone() const {
+ // operator overloading ---------------------------------------------
+ StringSearch & StringSearch::operator=(const StringSearch &that)
+ {
+-    if ((*this) != that) {
++    if (!((*this) == that)) {
+         UErrorCode status = U_ZERO_ERROR;
+         m_text_          = that.m_text_;
+         m_breakiterator_ = that.m_breakiterator_;
+diff --git a/libicui18n/libicui18n/i18n/vtzone.cpp b/libicui18n/libicui18n/i18n/vtzone.cpp
+index fa8c339..ab6825e 100644
+--- a/libicui18n/libicui18n/i18n/vtzone.cpp
++++ b/libicui18n/libicui18n/i18n/vtzone.cpp
+@@ -1000,7 +1000,7 @@ VTimeZone::operator=(const VTimeZone& right) {
+     if (this == &right) {
+         return *this;
+     }
+-    if (*this != right) {
++    if (!(*this == right)) {
+         BasicTimeZone::operator=(right);
+         if (tz != NULL) {
+             delete tz;
