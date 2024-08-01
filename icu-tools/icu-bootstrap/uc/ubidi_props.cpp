@@ -1,0 +1,1 @@
+../../../upstream/icu4c/source/common/ubidi_props.cpp

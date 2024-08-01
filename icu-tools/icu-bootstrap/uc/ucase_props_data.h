@@ -1,0 +1,1 @@
+../../../upstream/icu4c/source/common/ucase_props_data.h

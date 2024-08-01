@@ -1,0 +1,1 @@
+../../../upstream/icu4c/source/common/ucptrie_impl.h

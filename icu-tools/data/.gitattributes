@@ -1,0 +1,15 @@
+brkitr symlink=dir
+coll symlink=dir
+curr symlink=dir
+in symlink=dir
+lang symlink=dir
+locales symlink=dir
+mappings symlink=dir
+misc symlink=dir
+rbnf symlink=dir
+region symlink=dir
+sprep symlink=dir
+translit symlink=dir
+unidata symlink=dir
+unit symlink=dir
+zone symlink=dir
