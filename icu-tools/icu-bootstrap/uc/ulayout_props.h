@@ -1,0 +1,1 @@
+../../../upstream/icu4c/source/common/ulayout_props.h
