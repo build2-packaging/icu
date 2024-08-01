@@ -1,0 +1,5 @@
+genrb
+
+# Testscript output directory (can be symlink).
+#
+test-icu-tools
