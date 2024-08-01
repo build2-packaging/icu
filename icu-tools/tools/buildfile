@@ -1,0 +1,6 @@
+libs =
+#import libs += libhello%lib{hello}
+
+exe{icu-tools}: {hxx ixx txx h cxx c}{**} $libs testscript
+
+cc.poptions =+ "-I$out_root" "-I$src_root"

@@ -1,0 +1,42 @@
+This document describes how the ICU tools were packaged for build2. In
+particular, this understanding will be useful when upgrading to a new upstream
+version. See ../README-DEV for general notes on ICU packaging.
+
+The upstream sources were symlinked using a similar approach as taken in the
+libicu{uc,i18n,io} packages. Detailed instructions are not provided because
+this package's layout is much more complicated.
+
+We apply the following patches:
+
+1) Fix the 'unable to find numeric literal operator' MinGW GCC 11 error:
+
+   $ mv libicu/uc/putil.cpp libicu/uc/putil.cpp.orig
+   $ cp libicu/uc/putil.cpp.orig libicu/uc/putil.cpp
+
+   $ mv icu-bootstrap/toolutil/filetools.cpp icu-bootstrap/toolutil/filetools.cpp.orig
+   $ cp icu-bootstrap/toolutil/filetools.cpp.orig icu-bootstrap/toolutil/filetools.cpp
+
+   $ mv icu-bootstrap/toolutil/toolutil.cpp icu-bootstrap/toolutil/toolutil.cpp.orig
+   $ cp icu-bootstrap/toolutil/toolutil.cpp.orig icu-bootstrap/toolutil/toolutil.cpp
+
+   $ mv tools/pkgdata/pkgdata.cpp tools/pkgdata/pkgdata.cpp.orig
+   $ cp tools/pkgdata/pkgdata.cpp.orig tools/pkgdata/pkgdata.cpp
+   
+   $ git apply unable-find-num-literal-op.patch
+
+2) Fix Clang 10 compilation error:
+
+   $ mv icu-bootstrap/i18n/number_longnames.cpp icu-bootstrap/i18n/number_longnames.cpp.orig
+   $ cp icu-bootstrap/i18n/number_longnames.cpp.orig icu-bootstrap/i18n/number_longnames.cpp
+
+   $ mv icu-bootstrap/i18n/rbtz.cpp icu-bootstrap/i18n/rbtz.cpp.orig
+   $ cp icu-bootstrap/i18n/rbtz.cpp.orig icu-bootstrap/i18n/rbtz.cpp   
+
+   $ mv icu-bootstrap/i18n/vtzone.cpp icu-bootstrap/i18n/vtzone.cpp.orig
+   $ cp icu-bootstrap/i18n/vtzone.cpp.orig icu-bootstrap/i18n/vtzone.cpp
+
+   $ git apply clang10.patch
+
+Note that the above patches are produced by the following commands:
+
+$ git diff ><patch-path>

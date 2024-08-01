@@ -4,3 +4,5 @@ location: libicuuc/
 location: libicui18n/
 :
 location: libicuio/
+:
+location: icu-tools/
