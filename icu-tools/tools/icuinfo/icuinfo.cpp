@@ -231,6 +231,18 @@ void cmd_listplugins() {
 
 extern int
 main(int argc, char* argv[]) {
+    // Handle --build2-metadata (see also buildfile).
+    if (argc == 2 && strncmp (argv[1], "--build2-metadata=", 18) == 0)
+    {
+      printf ("# build2 buildfile icuinfo\n");
+      printf ("export.metadata = 1 icuinfo\n");
+      printf ("icuinfo.name = [string] icuinfo\n");
+      printf ("icuinfo.version = [string] '%s'\n", U_ICU_VERSION);
+      printf ("icuinfo.checksum = [string] '%s'\n", U_ICU_VERSION);
+      printf ("icuinfo.environment = [strings] ICU_DATA\n");
+      return 0;
+    }
+
     UErrorCode errorCode = U_ZERO_ERROR;
     UBool didSomething = false;
     

@@ -1098,6 +1098,18 @@ static void usage(const char *pname, int ecode) {
 extern int
 main(int argc, char **argv)
 {
+    // Handle --build2-metadata (see also buildfile).
+    if (argc == 2 && strncmp (argv[1], "--build2-metadata=", 18) == 0)
+    {
+      printf ("# build2 buildfile uconv\n");
+      printf ("export.metadata = 1 uconv\n");
+      printf ("uconv.name = [string] uconv\n");
+      printf ("uconv.version = [string] '%s'\n", U_ICU_VERSION);
+      printf ("uconv.checksum = [string] '%s'\n", U_ICU_VERSION);
+      printf ("uconv.environment = [strings] ICU_DATA\n");
+      return 0;
+    }
+
     FILE *outfile;
     int ret = 0;
 

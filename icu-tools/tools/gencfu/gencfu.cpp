@@ -134,6 +134,18 @@ static const char *readFile(const char *fileName, int32_t *len);
 //
 //----------------------------------------------------------------------------
 int  main(int argc, char **argv) {
+    // Handle --build2-metadata (see also buildfile).
+    if (argc == 2 && strncmp (argv[1], "--build2-metadata=", 18) == 0)
+    {
+      printf ("# build2 buildfile gencfu\n");
+      printf ("export.metadata = 1 gencfu\n");
+      printf ("gencfu.name = [string] gencfu\n");
+      printf ("gencfu.version = [string] '%s'\n", U_ICU_VERSION);
+      printf ("gencfu.checksum = [string] '%s'\n", U_ICU_VERSION);
+      printf ("gencfu.environment = [strings] ICU_DATA\n");
+      return 0;
+    }
+
     UErrorCode  status = U_ZERO_ERROR;
     const char *confFileName;
     const char *outFileName;

@@ -80,6 +80,18 @@ static UOption options[]={
 
 extern "C" int
 main(int argc, char* argv[]) {
+    // Handle --build2-metadata (see also buildfile).
+    if (argc == 2 && strncmp (argv[1], "--build2-metadata=", 18) == 0)
+    {
+      printf ("# build2 buildfile gennorm2\n");
+      printf ("export.metadata = 1 gennorm2\n");
+      printf ("gennorm2.name = [string] gennorm2\n");
+      printf ("gennorm2.version = [string] '%s'\n", U_ICU_VERSION);
+      printf ("gennorm2.checksum = [string] '%s'\n", U_ICU_VERSION);
+      printf ("gennorm2.environment = [strings] ICU_DATA\n");
+      return 0;
+    }
+
     U_MAIN_INIT_ARGS(argc, argv);
 
     /* preset then read command line options */

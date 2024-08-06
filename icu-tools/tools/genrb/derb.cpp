@@ -72,6 +72,18 @@ static UFILE *ustderr = nullptr;
 
 extern int
 main(int argc, char* argv[]) {
+    // Handle --build2-metadata (see also buildfile).
+    if (argc == 2 && strncmp (argv[1], "--build2-metadata=", 18) == 0)
+    {
+      printf ("# build2 buildfile derb\n");
+      printf ("export.metadata = 1 derb\n");
+      printf ("derb.name = [string] derb\n");
+      printf ("derb.version = [string] '%s'\n", U_ICU_VERSION);
+      printf ("derb.checksum = [string] '%s'\n", U_ICU_VERSION);
+      printf ("derb.environment = [strings] ICU_DATA\n");
+      return 0;
+    }
+
     const char *encoding = nullptr;
     const char *outputDir = nullptr; /* nullptr = no output directory, use current */
     const char *inputDir  = ".";
