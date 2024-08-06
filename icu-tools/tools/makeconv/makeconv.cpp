@@ -199,6 +199,17 @@ static UOption options[]={
 
 int main(int argc, char* argv[])
 {
+    // Handle --build2-metadata (see also buildfile).
+    if (argc == 2 && strncmp (argv[1], "--build2-metadata=", 18) == 0)
+    {
+      printf ("# build2 buildfile makeconv\n");
+      printf ("export.metadata = 1 makeconv\n");
+      printf ("makeconv.name = [string] makeconv\n");
+      printf ("makeconv.version = [string] '%s'\n", U_ICU_VERSION);
+      printf ("makeconv.checksum = [string] '%s'\n", U_ICU_VERSION);
+      return 0;
+    }
+
     ConvData data;
     char cnvName[UCNV_MAX_FULL_FILE_NAME_LENGTH];
 

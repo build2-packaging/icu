@@ -129,6 +129,17 @@ DataHeader dh ={
 //
 //----------------------------------------------------------------------------
 int  main(int argc, char **argv) {
+    // Handle --build2-metadata (see also buildfile).
+    if (argc == 2 && strncmp (argv[1], "--build2-metadata=", 18) == 0)
+    {
+      printf ("# build2 buildfile genbrk\n");
+      printf ("export.metadata = 1 genbrk\n");
+      printf ("genbrk.name = [string] genbrk\n");
+      printf ("genbrk.version = [string] '%s'\n", U_ICU_VERSION);
+      printf ("genbrk.checksum = [string] '%s'\n", U_ICU_VERSION);
+      return 0;
+    }
+
     UErrorCode  status = U_ZERO_ERROR;
     const char *ruleFileName;
     const char *outFileName;

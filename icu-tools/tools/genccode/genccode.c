@@ -97,6 +97,17 @@ static UOption options[]={
 #define CALL_WRITEOBJECT    'o'
 extern int
 main(int argc, char* argv[]) {
+  // Handle --build2-metadata (see also buildfile).
+    if (argc == 2 && strncmp (argv[1], "--build2-metadata=", 18) == 0)
+    {
+      printf ("# build2 buildfile genccode\n");
+      printf ("export.metadata = 1 genccode\n");
+      printf ("genccode.name = [string] genccode\n");
+      printf ("genccode.version = [string] '%s'\n", U_ICU_VERSION);
+      printf ("genccode.checksum = [string] '%s'\n", U_ICU_VERSION);
+      return 0;
+    }
+
     UBool verbose = true;
     char writeCode;
 

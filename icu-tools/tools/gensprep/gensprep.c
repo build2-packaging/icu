@@ -138,6 +138,17 @@ static int printHelp(int argc, char* argv[]){
 
 extern int
 main(int argc, char* argv[]) {
+    // Handle --build2-metadata (see also buildfile).
+    if (argc == 2 && strncmp (argv[1], "--build2-metadata=", 18) == 0)
+    {
+      printf ("# build2 buildfile gensprep\n");
+      printf ("export.metadata = 1 gensprep\n");
+      printf ("gensprep.name = [string] gensprep\n");
+      printf ("gensprep.version = [string] '%s'\n", U_ICU_VERSION);
+      printf ("gensprep.checksum = [string] '%s'\n", U_ICU_VERSION);
+      return 0;
+    }
+
 #if !UCONFIG_NO_IDNA
     char* filename = NULL;
 #endif

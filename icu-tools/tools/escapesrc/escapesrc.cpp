@@ -413,6 +413,17 @@ fail:
  * Main function
  */
 int main(int argc, const char *argv[]) {
+  // Handle --build2-metadata (see also buildfile).
+  if (argc == 2 && strncmp (argv[1], "--build2-metadata=", 18) == 0)
+  {
+    printf ("# build2 buildfile escapesrc\n");
+    printf ("export.metadata = 1 escapesrc\n");
+    printf ("escapesrc.name = [string] escapesrc\n");
+    printf ("escapesrc.version = [string] '%s'\n", U_ICU_VERSION);
+    printf ("escapesrc.checksum = [string] '%s'\n", U_ICU_VERSION);
+    return 0;
+  }
+
   prog = argv[0];
 
   if(argc != 3) {

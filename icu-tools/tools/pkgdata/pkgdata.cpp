@@ -271,6 +271,17 @@ const char  *progname = "PKGDATA";
 
 int
 main(int argc, char* argv[]) {
+    // Handle --build2-metadata (see also buildfile).
+    if (argc == 2 && strncmp (argv[1], "--build2-metadata=", 18) == 0)
+    {
+      printf ("# build2 buildfile pkgdata\n");
+      printf ("export.metadata = 1 pkgdata\n");
+      printf ("pkgdata.name = [string] pkgdata\n");
+      printf ("pkgdata.version = [string] '%s'\n", U_ICU_VERSION);
+      printf ("pkgdata.checksum = [string] '%s'\n", U_ICU_VERSION);
+      return 0;
+    }
+
     int result = 0;
     /* FileStream  *out; */
     UPKGOptions  o;

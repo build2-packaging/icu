@@ -1477,6 +1477,17 @@ int exportNorm() {
 #endif // !UCONFIG_NO_NORMALIZATION
 
 int main(int argc, char* argv[]) {
+    // Handle --build2-metadata (see also buildfile).
+    if (argc == 2 && strncmp (argv[1], "--build2-metadata=", 18) == 0)
+    {
+      printf ("# build2 buildfile icuexportdata\n");
+      printf ("export.metadata = 1 icuexportdata\n");
+      printf ("icuexportdata.name = [string] icuexportdata\n");
+      printf ("icuexportdata.version = [string] '%s'\n", U_ICU_VERSION);
+      printf ("icuexportdata.checksum = [string] '%s'\n", U_ICU_VERSION);
+      return 0;
+    }
+
     U_MAIN_INIT_ARGS(argc, argv);
 
     /* preset then read command line options */

@@ -242,6 +242,17 @@ static UBool readLine(UCHARBUF *f, UnicodeString &fileLine, IcuToolErrorCode &er
 //
 //----------------------------------------------------------------------------
 int  main(int argc, char **argv) {
+    // Handle --build2-metadata (see also buildfile).
+    if (argc == 2 && strncmp (argv[1], "--build2-metadata=", 18) == 0)
+    {
+      printf ("# build2 buildfile gendict\n");
+      printf ("export.metadata = 1 gendict\n");
+      printf ("gendict.name = [string] gendict\n");
+      printf ("gendict.version = [string] '%s'\n", U_ICU_VERSION);
+      printf ("gendict.checksum = [string] '%s'\n", U_ICU_VERSION);
+      return 0;
+    }
+
     //
     // Pick up and check the command line arguments,
     //    using the standard ICU tool utils option handling.

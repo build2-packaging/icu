@@ -131,6 +131,17 @@ int
 main(int argc,
      char* argv[])
 {
+    // Handle --build2-metadata (see also buildfile).
+    if (argc == 2 && strncmp (argv[1], "--build2-metadata=", 18) == 0)
+    {
+      printf ("# build2 buildfile genrb\n");
+      printf ("export.metadata = 1 genrb\n");
+      printf ("genrb.name = [string] genrb\n");
+      printf ("genrb.version = [string] '%s'\n", U_ICU_VERSION);
+      printf ("genrb.checksum = [string] '%s'\n", U_ICU_VERSION);
+      return 0;
+    }
+
     UErrorCode  status    = U_ZERO_ERROR;
     const char *arg       = nullptr;
     const char *outputDir = nullptr; /* nullptr = no output directory, use current */
