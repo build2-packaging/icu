@@ -1,0 +1,143 @@
+tclass = $cc.target.class
+tsys   = $cc.target.system
+tcpu   = $cc.target.cpu
+
+macos   = ($tclass == 'macos')
+windows = ($tclass == 'windows')
+mingw   = ($windows && $tsys == 'mingw32')
+
+# Only x86 and ARM supported from Windows 2000 onwards.
+#
+win64 = ($tcpu == 'x86_64'|| $tcpu == 'aarch64')
+
+# Note: the next 3 variables are only referenced in icu-tools and
+# libicuuc.
+#
+# @@ TODO Update once endianness detection has been added to build2.
+#
+icu_data_char = 'l' # l for little-endian, b for big-endian.
+
+# These variables correspond to the upstream ICUDATA_BASENAME_VERSION and
+# ICUDATA_PLATFORM_NAME respectively.
+#
+data_basename = "icudt$(version.major)"        # icudt74
+data_name     = "$data_basename$icu_data_char" # icudt74l
+
+# Build options.
+#
+# Note that we build without plugins support (UCONFIG_ENABLE_PLUGINS macro is
+# undefined) and thus we don't define the DEFAULT_ICU_PLUGINS macro either.
+#
+# Macros are defined in the following files:
+#
+#    source/configure
+#    source/icudefs.mk.in
+#    source/**/Makefile.in
+#    source/config/mh-*
+#
+
+cc.poptions  += -DU_ATTRIBUTE_DEPRECATED=
+
+if! $windows
+  cc.poptions += -DU_HAVE_STRTOD_L=1
+else
+{
+  # Note that upstream apparently only disables exceptions on Windows. And as
+  # for compiler options, exceptions are disabled unless a variant of the /EH
+  # option is passed (which upstream does not do).
+  #
+  cc.poptions += -DU_HAVE_STRTOD_L=0 -DHAVE_DLOPEN=0 -DU_HAVE_MMAP=0    \
+                 ($win64 ? -DWIN32 -DWIN64 : -DWIN32)                   \
+                 -D_CRT_SECURE_NO_DEPRECATE                             \
+                 -D_HAS_EXCEPTIONS=0
+}
+
+switch $tclass, $tsys
+{
+  case 'linux'
+    cc.poptions += -D_REENTRANT -DU_HAVE_ELF_H -DU_HAVE_XLOCALE_H=0
+
+  case 'bsd'
+    cc.poptions += -D_REENTRANT -DU_HAVE_ELF_H -DU_HAVE_XLOCALE_H=1 \
+                   -DU_HAVE_TIMEZONE=0 -DU_HAVE_STRING_VIEW=1
+
+  case 'macos'
+    cc.poptions += -DU_HAVE_XLOCALE_H=1 -DU_HAVE_STRING_VIEW=1
+
+  # Note that upstream also passes -mthreads (thread-safe exception handling)
+  # that we omit as ICU never throws exceptions (see ICU FAQs for details).
+  #
+  case 'windows', 'mingw32'
+    cc.poptions += -DWINVER=0x0601 -D_WIN32_WINNT=0x0601 \
+                   -D_MT # Used instead of -mthreads.
+
+  case 'windows'
+    cc.poptions += -DU_HAVE_DIRENT_H=0 -DU_HAVE_POPEN=0 -DU_HAVE_TZNAME=0
+}
+
+# Compilation options.
+#
+# `common_*`: to be applied to libraries and executables.
+#
+# `lib_*`: to be applied to libraries only (except the icudata library).
+#
+common_cc_coptions =
+common_cxx_coptions =
+lib_cc_coptions =
+
+switch $cxx.class
+{
+  case 'gcc'
+  {
+    lib_cc_coptions += -fvisibility=hidden
+
+    # Disable warnings that pop up with -Wall -Wextra. Upstream doesn't seem to
+    # care about these and it is not easy to disable specific warnings in a way
+    # that works across compilers/version (some -Wno-* options are only
+    # recognized in newer versions). There are still some warnings left that
+    # appear for certain platforms/compilers. We pass them through but disable
+    # treating them as errors.
+    #
+    common_cc_coptions += -Wno-all -Wno-extra -Wno-error
+  }
+  case 'msvc'
+  {
+    common_cc_coptions  += /W3 /GF /Gy
+    common_cxx_coptions += /Zc:wchar_t
+  }
+}
+
+# Link options and libraries.
+#
+lib_cc_loptions=
+common_cxx_libs=
+
+switch $tclass, $tsys
+{
+  case 'linux'
+  {
+    lib_cc_loptions += -Wl,-Bsymbolic \
+		       -Wl,--no-undefined # Make sure all symbols are resolvable.
+
+    common_cxx_libs += -pthread -ldl -lm
+  }
+  case 'bsd'
+  {
+    lib_cc_loptions += -Wl,-Bsymbolic
+    common_cxx_libs += -pthread -lm
+  }
+  case 'macos'
+  {
+    common_cxx_libs += -pthread -lm
+  }
+  case 'windows', 'mingw32'
+  {
+    # We omit -pthread -lm that seems to be redundant (see note about
+    # -mthreads above).
+    #
+    lib_cc_loptions += -Wl,--enable-auto-import \
+                       -Wl,--no-undefined # Make sure all symbols are resolvable.
+  }
+  case 'windows'
+    common_cxx_libs += advapi32.lib
+}
