@@ -23,3 +23,10 @@ if ($c.target.system == 'win32-msvc')
 
 if ($c.class == 'msvc')
   cc.coptions += /wd4251 /wd4275 /wd4800
+
+using c.as-cpp
+
+using in
+
+if ($build.mode != 'skeleton')
+  source build/common.build
