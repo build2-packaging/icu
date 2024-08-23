@@ -4,9 +4,7 @@
 import intf_libs  = libicui18n%lib{icui18n}
 import intf_libs += libicuuc%lib{icuuc}
 
-patched = ufile
-
-lib{icuio}: io/hxx{**} io/cxx{** -{$patched}} cxx{$patched} $intf_libs
+lib{icuio}: io/hxx{**} io/cxx{**} $intf_libs
 
 tclass = $cxx.target.class
 tsys   = $cxx.target.system
