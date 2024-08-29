@@ -80,29 +80,29 @@ some binary data files for the target platform (more that 3600 files in
 total). Afterwards it runs the pkgdata utility that produces the libicudata
 library which embeds the resulting binary data. Internally, this utility
 converts the data into assembly code, compiles and links the library using the
-specified options file. Note that to resolve the chicken and egg problem
-(tools link the common library that links the data library) the upstream
-builds the stub data library first.
+specified options file.
 
-In future we may implement this logic in the buildfile, but currently we reuse
-the upstream's auto-generated source code for the data bundling. Let's,
-however, make the upstream package to generate a more portable C code, rather
-than the assembly code. Unfortunately there is no way to request this behavior
-via the configure script options, so we apply the following patch to
-icu4c/source/data/Makefile.in:
+Note that to resolve the chicken and egg problem (tools link the common
+library that links the data library) the upstream build links libicuuc to, and
+runs the data tools against, an empty icudata library ("stubdata") and then
+replaces it with the real icudata library once it has been built. Because in
+build2 the stubdata method would require too much low-level hackery and the
+fact that in cross-compilation, which this project supports by default,
+building everything twice is unavoidable, we break the dependency cycle by
+linking the tools against a bootstrap library that contains the icuuc,
+icui18n, and icuio libraries, and an empty data library.
 
---- icu4c/source/data/Makefile.in.orig	2019-12-22 18:07:54.432627162 +0300
-+++ icu4c/source/data/Makefile.in	2019-12-28 17:10:09.674021548 +0300
-@@ -26,6 +26,9 @@ LIB_STATIC_ICUDATA_NAME=$(LIBSICU)$(DATA
- ifeq ($(PKGDATA_OPTS),)
- PKGDATA_OPTS = -O $(top_builddir)/data/icupkg.inc
- endif
-+
-+PKGDATA_OPTS += --without-assembly
-+
- ifeq ($(PKGDATA_VERSIONING),)
- PKGDATA_VERSIONING = -r $(SO_TARGET_VERSION)
- endif
+This arrangement is sufficient for producing the icudata library because the
+tools will satisfy internal data dependencies by loading those files directly
+from the build output directory. However in the process of building
+application data (additional data packages provided by user applications that
+might depend on elements of the default ICU data) those files will obviously
+not be available so we do ultimately need to make the default ICU data
+available to the tools. Therefore, in place of the icudata library, we provide
+the data as an archive file (.dat) in the icu-tools package. The libicuuc
+package produces the icudata library from this data archive. Note that in the
+upstream build the process is not much different except that the data archive
+is discarded.
 
 To configure and build the upstream package on the platform of interest run
 the following commands in the upstream's icu4c/source/ directory.

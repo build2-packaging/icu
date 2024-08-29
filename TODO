@@ -2,6 +2,8 @@ On the revision:
 
 On the release:
 
-- Use legal{} target type for legal documentation (LICENSE, AUTHORS, etc).
+- Remove workaround for builtin find not working on symlinked directories (see
+  @@ TODO in icu-tools/data/buildfile).
 
-  Note that this requires bumping build2 version requirement to 0.13.0.
+- Use endianness detection once added to build2 (see @@ TODO in
+  libicuuc/build/common.build).
