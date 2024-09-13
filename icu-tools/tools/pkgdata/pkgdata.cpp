@@ -25,13 +25,6 @@
 #include "unicode/putil.h"
 #include "putilimp.h"
 
-#if U_HAVE_POPEN
-#if (U_PF_MINGW <= U_PLATFORM && U_PLATFORM <= U_PF_CYGWIN) && defined(__STRICT_ANSI__)
-/* popen/pclose aren't defined in strict ANSI on Cygwin and MinGW */
-#undef __STRICT_ANSI__
-#endif
-#endif
-
 #include "cmemory.h"
 #include "cstring.h"
 #include "filestrm.h"

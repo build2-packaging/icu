@@ -83,7 +83,7 @@ RuleBasedTimeZone::~RuleBasedTimeZone() {
 
 RuleBasedTimeZone&
 RuleBasedTimeZone::operator=(const RuleBasedTimeZone& right) {
-    if (*this != right) {
+    if (!(*this == right)) {
         BasicTimeZone::operator=(right);
         deleteRules();
         fInitialRule = right.fInitialRule->clone();
@@ -104,7 +104,7 @@ RuleBasedTimeZone::operator==(const TimeZone& that) const {
         return false;
     }
     RuleBasedTimeZone *rbtz = (RuleBasedTimeZone*)&that;
-    if (*fInitialRule != *(rbtz->fInitialRule)) {
+    if (!(*fInitialRule == *(rbtz->fInitialRule))) {
         return false;
     }
     if (compareRules(fHistoricRules, rbtz->fHistoricRules)
@@ -527,7 +527,7 @@ RuleBasedTimeZone::hasSameRules(const TimeZone& other) const {
         return false;
     }
     const RuleBasedTimeZone& that = static_cast<const RuleBasedTimeZone&>(other);
-    if (*fInitialRule != *(that.fInitialRule)) {
+    if (!(*fInitialRule == *(that.fInitialRule))) {
         return false;
     }
     if (compareRules(fHistoricRules, that.fHistoricRules)

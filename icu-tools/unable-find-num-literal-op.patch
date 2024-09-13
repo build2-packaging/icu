@@ -1,0 +1,68 @@
+diff --git a/icu-tools/icu-bootstrap/toolutil/filetools.cpp b/icu-tools/icu-bootstrap/toolutil/filetools.cpp
+index 994d8e3..cf4d047 100644
+--- a/icu-tools/icu-bootstrap/toolutil/filetools.cpp
++++ b/icu-tools/icu-bootstrap/toolutil/filetools.cpp
+@@ -7,12 +7,6 @@
+  */
+ 
+ #include "unicode/platform.h"
+-#if U_PLATFORM == U_PF_MINGW
+-// *cough* - for struct stat
+-#ifdef __STRICT_ANSI__
+-#undef __STRICT_ANSI__
+-#endif
+-#endif
+ 
+ #include "filetools.h"
+ #include "filestrm.h"
+diff --git a/icu-tools/icu-bootstrap/toolutil/toolutil.cpp b/icu-tools/icu-bootstrap/toolutil/toolutil.cpp
+index 7e7bdc7..26393fb 100644
+--- a/icu-tools/icu-bootstrap/toolutil/toolutil.cpp
++++ b/icu-tools/icu-bootstrap/toolutil/toolutil.cpp
+@@ -21,12 +21,6 @@
+ */
+ 
+ #include "unicode/platform.h"
+-#if U_PLATFORM == U_PF_MINGW
+-// *cough* - for struct stat
+-#ifdef __STRICT_ANSI__
+-#undef __STRICT_ANSI__
+-#endif
+-#endif
+ 
+ #include <stdio.h>
+ #include <sys/stat.h>
+diff --git a/icu-tools/tools/pkgdata/pkgdata.cpp b/icu-tools/tools/pkgdata/pkgdata.cpp
+index 281925c..75baecc 100644
+--- a/icu-tools/tools/pkgdata/pkgdata.cpp
++++ b/icu-tools/tools/pkgdata/pkgdata.cpp
+@@ -25,13 +25,6 @@
+ #include "unicode/putil.h"
+ #include "putilimp.h"
+ 
+-#if U_HAVE_POPEN
+-#if (U_PF_MINGW <= U_PLATFORM && U_PLATFORM <= U_PF_CYGWIN) && defined(__STRICT_ANSI__)
+-/* popen/pclose aren't defined in strict ANSI on Cygwin and MinGW */
+-#undef __STRICT_ANSI__
+-#endif
+-#endif
+-
+ #include "cmemory.h"
+ #include "cstring.h"
+ #include "filestrm.h"
+diff --git a/icu-tools/icu-bootstrap/uc/putil.cpp b/icu-tools/icu-bootstrap/uc/putil.cpp
+index acb9022..58cc8a6 100644
+--- a/icu-tools/icu-bootstrap/uc/putil.cpp
++++ b/icu-tools/icu-bootstrap/uc/putil.cpp
+@@ -46,11 +46,6 @@
+ // First, the platform type. Need this for U_PLATFORM.
+ #include "unicode/platform.h"
+ 
+-#if U_PLATFORM == U_PF_MINGW && defined __STRICT_ANSI__
+-/* tzset isn't defined in strict ANSI on MinGW. */
+-#undef __STRICT_ANSI__
+-#endif
+-
+ /*
+  * Cygwin with GCC requires inclusion of time.h after the above disabling strict asci mode statement.
+  */

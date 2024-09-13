@@ -1129,7 +1129,7 @@ void LongNameHandler::processPatternTimes(MeasureUnitImpl &&productUnit,
         // - Check all the existing unit tests that fail without this: is it due
         //   to incorrect fallback via getMeasureData?
         // - Do those unit tests cover this code path representatively?
-        if (builtinUnit != MeasureUnit()) {
+        if (!(builtinUnit == MeasureUnit())) {
             getMeasureData(loc, builtinUnit, width, caseVariant, outArray, status);
             maybeCalculateGender(loc, builtinUnit, outArray, status);
         }
