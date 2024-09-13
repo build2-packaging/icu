@@ -7,12 +7,6 @@
  */
 
 #include "unicode/platform.h"
-#if U_PLATFORM == U_PF_MINGW
-// *cough* - for struct stat
-#ifdef __STRICT_ANSI__
-#undef __STRICT_ANSI__
-#endif
-#endif
 
 #include "filetools.h"
 #include "filestrm.h"

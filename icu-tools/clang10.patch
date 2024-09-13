@@ -1,0 +1,57 @@
+diff --git a/icu-tools/icu-bootstrap/i18n/number_longnames.cpp b/icu-tools/icu-bootstrap/i18n/number_longnames.cpp
+index 96c6ca6..89d5057 100644
+--- a/icu-tools/icu-bootstrap/i18n/number_longnames.cpp
++++ b/icu-tools/icu-bootstrap/i18n/number_longnames.cpp
+@@ -1129,7 +1129,7 @@ void LongNameHandler::processPatternTimes(MeasureUnitImpl &&productUnit,
+         // - Check all the existing unit tests that fail without this: is it due
+         //   to incorrect fallback via getMeasureData?
+         // - Do those unit tests cover this code path representatively?
+-        if (builtinUnit != MeasureUnit()) {
++        if (!(builtinUnit == MeasureUnit())) {
+             getMeasureData(loc, builtinUnit, width, caseVariant, outArray, status);
+             maybeCalculateGender(loc, builtinUnit, outArray, status);
+         }
+diff --git a/icu-tools/icu-bootstrap/i18n/rbtz.cpp b/icu-tools/icu-bootstrap/i18n/rbtz.cpp
+index e4d7143..71b540e 100644
+--- a/icu-tools/icu-bootstrap/i18n/rbtz.cpp
++++ b/icu-tools/icu-bootstrap/i18n/rbtz.cpp
+@@ -83,7 +83,7 @@ RuleBasedTimeZone::~RuleBasedTimeZone() {
+ 
+ RuleBasedTimeZone&
+ RuleBasedTimeZone::operator=(const RuleBasedTimeZone& right) {
+-    if (*this != right) {
++    if (!(*this == right)) {
+         BasicTimeZone::operator=(right);
+         deleteRules();
+         fInitialRule = right.fInitialRule->clone();
+@@ -104,7 +104,7 @@ RuleBasedTimeZone::operator==(const TimeZone& that) const {
+         return false;
+     }
+     RuleBasedTimeZone *rbtz = (RuleBasedTimeZone*)&that;
+-    if (*fInitialRule != *(rbtz->fInitialRule)) {
++    if (!(*fInitialRule == *(rbtz->fInitialRule))) {
+         return false;
+     }
+     if (compareRules(fHistoricRules, rbtz->fHistoricRules)
+@@ -527,7 +527,7 @@ RuleBasedTimeZone::hasSameRules(const TimeZone& other) const {
+         return false;
+     }
+     const RuleBasedTimeZone& that = static_cast<const RuleBasedTimeZone&>(other);
+-    if (*fInitialRule != *(that.fInitialRule)) {
++    if (!(*fInitialRule == *(that.fInitialRule))) {
+         return false;
+     }
+     if (compareRules(fHistoricRules, that.fHistoricRules)
+diff --git a/icu-tools/icu-bootstrap/i18n/vtzone.cpp b/icu-tools/icu-bootstrap/i18n/vtzone.cpp
+index 25af556..84d3fdd 100644
+--- a/icu-tools/icu-bootstrap/i18n/vtzone.cpp
++++ b/icu-tools/icu-bootstrap/i18n/vtzone.cpp
+@@ -998,7 +998,7 @@ VTimeZone::operator=(const VTimeZone& right) {
+     if (this == &right) {
+         return *this;
+     }
+-    if (*this != right) {
++    if (!(*this == right)) {
+         BasicTimeZone::operator=(right);
+         if (tz != nullptr) {
+             delete tz;
