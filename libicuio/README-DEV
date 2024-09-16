@@ -5,8 +5,3 @@ See ../README-DEV for general notes on ICU packaging.
 Symlink the required upstream directories into libicuio/:
 
 $ ln -s ../../upstream/icu4c/source/io libicuio
-
-Fix the 'unable to find numeric literal operator' GCC 11 error:
-
-$ cp libicuio/io/ufile.cpp libicuio
-$ patch -p0 <libicuio/ufile.cpp.patch
