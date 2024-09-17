@@ -1,0 +1,695 @@
+# file      : data/buildfile
+# license   : Unicode License; see accompanying LICENSE file
+
+import! [metadata] genbrk = exe{genbrk}
+import! [metadata] gencfu = exe{gencfu}
+import! [metadata] gencnval = exe{gencnval}
+import! [metadata] gendict = exe{gendict}
+import! [metadata] genrb = exe{genrb}
+import! [metadata] gensprep = exe{gensprep}
+import! [metadata] icupkg = exe{icupkg}
+import! [metadata] makeconv = exe{makeconv}
+import! [metadata] pkgdata = exe{pkgdata}
+
+# The data source files are processed into binary form by various ICU tools
+# and then packed into the ICU data archive (e.g., icudt74l.dat) by the
+# pkgdata tool.
+#
+# The ICU default data is provided to the ICU tools in the form of the data
+# archive, whereas it is provided to the ICU libraries in the form of the
+# icudata library (produced in the libicuuc package). See the root README-DEV
+# for the reason we diverge from upstream in this way.
+#
+# The path to the data archive's directory is compiled into the tools as the
+# ICU data directory via the U_ICU_DATA_DEFAULT_DIR macro in
+# icu-bootstrap/buildfile.
+#
+# Note that ICU allows packaged data items (those in the data archive) to be
+# overridden by individual/standalone files. As a result, unless care is
+# taken, the presence of the intermediate build output could prevent the tools
+# from searching the data archive. This would obviously be a mistake once the
+# data archive has been built, but during the data archive build the tools do
+# actually need to read the individual data files in order to satisfy internal
+# data dependencies. Thus we need different build-time and run-time ICU data
+# directories.
+#
+# We also have to make the $out_base/ directory tree mirror that of $src_base/
+# so that the myriad data subdirectories are created automatically. However
+# the tools expect individual data files to be inside <ICU_DATA_DIR>/icudtXXX/
+# (see `data_name` in root.build for details). Therefore set the build-time
+# ICU data directory to $out_base/tmp/ using the --icudatadir tools option and
+# create tmp/icudtXXX as a symlink to $out_base. The tmp/ indirection achieves
+# the separation of the build-time and run-time ICU data paths: without it the
+# tools will read <ICU_DATA_DIR>/icudtXXX/foo.bar before searching for foo.bar
+# in <ICU_DATA_DIR>/icudtXXX.dat.
+#
+
+# The path to the build-time data directory.
+#
+btdd = [dir_path] build-time-data-dir
+
+# The ICU data archive.
+#
+# The prerequisite icudata.lst is a list of all data target paths, relative to
+# `./`, and it has all of the binary data files as prerequisites.
+#
+#   @@ TMP Would have liked to make the binary data files ad hoc prereqs to
+#      prevent icudata.lst from being re-generated every time a data file
+#      changes. Is there a way to access ad hoc prereqs inside an ad hoc
+#      recipe?
+#
+file{$(data_name).dat}: file{$btdd/$data_name} file{icudata.lst} $pkgdata
+{{
+  # --mode common: Produce the data archive (.dat) only.
+  #
+  $pkgdata --quiet --copyright          \
+           --mode common                \
+           --name      $data_name       \
+           --sourcedir $out_base        \
+           --destdir   $out_base        \
+           --tempdir   $out_base        \
+           $path($<[1])
+}}
+
+# Create the build-time ICU data directory path (see above).
+#
+file{$btdd/$data_name}: fsdir{$btdd/}
+{{
+  rm -f $path($>[0])
+  ln -s ../ $path($>[0])
+}}
+
+# Binary data file target types.
+#
+# See
+# https://unicode-org.github.io/icu/userguide/icu_data/#icu-data-file-formats
+# and upstream/icu4c/source/data/BUILDRULES.py for more information.
+#
+
+# ICU Data filter file (currently only used for resource bundles in
+# collation/).
+#
+define flt: file
+flt{*}: extension = txt
+
+# Used for various types/formats of ICU data files.
+#
+define icu: file
+icu{*}: extension = icu
+
+# Normalization data.
+#
+define nrm: file
+nrm{*}: extension = nrm
+
+# Dictionary-based break iterator data.
+#
+define dict: file
+dict{*}: extension = dict
+
+# A conversion mapping table.
+#
+define cnv: file
+cnv{*}: extension = cnv
+
+# Rule-based break iterator data.
+#
+define brk: file
+brk{*}: extension = brk
+
+# Stringprep profile data.
+#
+define spp: file
+spp{*}: extension = spp
+
+# Generate conversion (charset) aliases.
+#
+file{cnvalias.icu}: mappings/file{convrtrs.txt} $gencnval
+{{
+  # Work around a Windows-specific problem in which gencnval fails to open the
+  # output file for writing if it already exists due to it being locked for
+  # some mysterious reason (antivirus?). The output file will already exist in
+  # case of update followed by install because the tools will have to be
+  # rebuilt with the install-specific ICU data directory and thus the data
+  # will be generated for a second time.
+  #
+  #   @@ TMP Do we need to find a cleaner/more permanent solution?
+  #
+  rm -f $path($>[0])
+
+  # Note that the output file is always called cnvalias.icu.
+  #
+  $gencnval --sourcedir $directory($path($<[0]))        \
+            --destdir   $directory($path($>[0]))        \
+            $leaf($path($<[0]))
+}}
+
+# Add cnvalias as a prerequisite of icudata.lst. (Its list of prerequisites
+# will be updated like this throughout the rest of the file.)
+#
+file{icudata.lst}: file{cnvalias.icu}
+
+# Dependencies for the res_index.res targets that are required for the
+# following directories.
+#
+res_index_dirs = brkitr         \
+                 coll           \
+                 curr           \
+                 lang           \
+                 locales        \
+                 rbnf           \
+                 region         \
+                 unit           \
+                 zone
+
+for d: $res_index_dirs
+{
+  # Source and output subdirectories.
+  #
+  # Outputs go into the corresponding output subdirectory except for locales/
+  # in which case they go directly into `./`.
+  #
+  sd = [dir_path] $d
+  od = [dir_path] ($d != locales ? $d : .)
+
+  t = $od/res{res_index}      # Target
+  s = $od/file{res_index.txt} # Source file (also generated)
+
+  # Dependencies for res_index.res and its dependency res_index.txt.
+  #
+  $t: $s $genrb
+  $s: $sd/file{LOCALE_DEPS.json}
+
+  file{icudata.lst}: $t
+}
+
+# Dependencies for the res{*} targets in rbnf/.
+#
+for s: rbnf/file{*.txt}
+{
+  t = rbnf/res{$name($s)}
+  $t: $s $genrb
+
+  file{icudata.lst}: $t
+}
+
+# Dependencies for coll/ucadata.icu, generated from
+# in/coll/ucadata-{unihan,implicithan}.icu. The upstream default is unihan.
+#
+coll/icu{ucadata}: in/coll/file{ucadata-unihan.icu} $icupkg
+
+file{icudata.lst}: coll/icu{ucadata}
+
+coll/icu{ucadata}: in/coll/file{ucadata-unihan-*}       \
+                   in/coll/file{ucadata-implicithan*}: include = false
+
+# Dependencies for the res{*} targets in misc/.
+#
+misc_res_trgs =
+for s: misc/file{*.txt}
+{
+  t = res{$name($s)}
+  misc_res_trgs += $t
+
+  $t: $s $genrb file{cnvalias.icu}
+
+  file{icudata.lst}: $t
+}
+
+fsdir{filters/coll_tree/}: fsdir{filters/}
+
+# Dependencies for the res{*} targets in coll/.
+#
+for s: coll/file{*.txt}
+{
+  t = coll/res{$name($s)}
+
+  $t: $s $genrb         \
+      coll/icu{ucadata} \
+      $misc_res_trgs    \
+      unidata/file{UCARules.txt}
+
+  # Dependencies and genrb options for the filter files.
+  #
+  $t: filters/coll_tree/flt{$name($s)}
+  {
+    genrb_options += --filterDir $out_base/filters/coll_tree
+  }
+
+  # Add filters/coll_tree/ as prerequisite because it does not exist in the
+  # source tree (otherwise it would be created automatically).
+  #
+  filters/coll_tree/flt{$name($s)}: fsdir{filters/coll_tree/}
+
+  file{icudata.lst}: $t
+}
+
+# Generate a collation data filter file. These filters are applied by default
+# by the upstream build. See source/data/BUILDRULES.py.
+#
+flt{~'/(.*)/'}:
+{{
+  diag gen $>
+
+  echo \
+"# Caution: This file is automatically generated
+
++/
+-/collations/big5han
+-/collations/gb2312han" \
+  > $path($>[0])
+}}
+
+# Dependencies for the res{*} targets in the subdirectories that have a pool
+# bundle.
+#
+for d: curr     \
+       lang     \
+       locales  \
+       region   \
+       unit     \
+       zone
+{
+  # Source and output subdirectories.
+  #
+  # Outputs go into the corresponding output subdirectory except for locales/
+  # in which case they go directly into `./`.
+  #
+  sd = [dir_path] $d
+  od = [dir_path] ($d != locales ? $d : .)
+
+  # Exclude "supplemental" resource bundles which are not included in their
+  # subdirectories' pool bundles or res_index's.
+  #
+  if ($sd == curr)
+    excl = supplementalData.txt
+  elif ($sd == zone)
+    excl = tzdbNames.txt
+
+  for s: $sd/file{*.txt -{$excl}}
+  {
+    t = $od/res{$name($s)}
+
+    $t: $s $genrb $od/res{pool}
+    $t: genrb_options += --usePoolBundle "$out_base/$od"
+
+    file{icudata.lst}: $t
+  }
+
+  $od/res{pool}: $sd/file{*.txt -{$excl}} $genrb
+
+  file{icudata.lst}: $od/res{pool}
+}
+
+# These "supplemental" resource bundles are not included in their
+# subdirectories' pool bundles and are therefore also generated without the
+# --usePoolBundle option.
+#
+curr/res{supplementalData}: curr/file{supplementalData.txt} $genrb
+zone/res{tzdbNames}:        zone/file{tzdbNames.txt}        $genrb
+
+file{icudata.lst}: curr/res{supplementalData} \
+                   zone/res{tzdbNames}
+
+# Dependencies for rule-based transform (transliterator) data.
+#
+translit/res{root}: translit/file{root.txt} $genrb
+translit/res{en}:   translit/file{en.txt}   $genrb
+translit/res{el}:   translit/file{el.txt}   $genrb
+
+translit/res{root en el}: translit/file{*.txt -{root.txt en.txt el.txt}}
+
+file{icudata.lst}: translit/res{root en el}
+
+# Dependencies for dictionary-based break iterator data (brkiter/dict{*}).
+#
+dict_trgs =
+for s: brkitr/dictionaries/file{*.txt}
+{
+  t = brkitr/dict{$name($s)}
+
+  $t: $s $gendict
+
+  dict_trgs += $t
+}
+
+# gendict options for brkiter/dict{*}. See source/data/BUILDRULES.py.
+#
+brkitr/dict{burmesedict}: gendict_options += --bytes --transform offset-0x1000
+brkitr/dict{cjdict}:      gendict_options += --uchars
+brkitr/dict{khmerdict}:   gendict_options += --bytes --transform offset-0x1780
+brkitr/dict{laodict}:     gendict_options += --bytes --transform offset-0x0e80
+brkitr/dict{thaidict}:    gendict_options += --bytes --transform offset-0x0e00
+
+file{icudata.lst}: $dict_trgs
+
+# See source/data/BUILDRULES.py for why the other .icu files in in/ are
+# excluded.
+#
+for s: in/file{unames.icu ulayout.icu uemoji.icu}
+{
+  sd = $path.relative($directory($s), [dir_path] in) # Subdir of data/.
+  t = $sd/icu{$name($s)}
+
+  $t: $s $icupkg
+
+  file{icudata.lst}: $t
+}
+
+# Dependencies for rule-based break iterator data (brkitr/rules/foo.txt ->
+# foo.brk).
+#
+brkitr_brk_trgs =
+for s: brkitr/rules/file{*.txt}
+{
+  t = brkitr/brk{$name($s)}
+
+  $t: $s $genbrk
+
+  # These dependencies are defined in generate_brkitr_brk in
+  # upstream/icu4c/source/data/BUILDRULES.py. Note that the lstm and adaboost
+  # dependencies are disabled by default in
+  # source/python/icutools/databuilder/filtration.py.
+  #
+  $t: file{cnvalias.icu} icu{ulayout uemoji}
+
+  brkitr_brk_trgs += $t
+}
+
+file{icudata.lst}: $brkitr_brk_trgs
+
+# Dependencies for the res{*} targets in brkitr/.
+#
+for s: brkitr/file{*.txt}
+{
+  t = brkitr/res{$name($s)}
+
+  $t: $s $genrb $dict_trgs $brkitr_brk_trgs
+
+  file{icudata.lst}: $t
+}
+
+# Dependencies for conversion mapping tables (foo.ucm -> foo.cnv).
+#
+# Note that some of these .ucm input files are of the form macos-7_3-10.2.ucm
+# (i.e., contain multiple dots; hence the use of `...`).
+#
+for s: mappings/file{*.ucm...}
+{
+  t = cnv{$name($s)...}
+
+  $t: $s $makeconv
+
+  file{icudata.lst}: $t
+}
+
+# Dependencies for normalization data (in/foo.nrm -> foo.nrm). See
+# source/data/BUILDRULES.py for why nfc.nrm is excluded.
+#
+for s: in/file{*.nrm -nfc.nrm}
+{
+  nrm{$name($s)}: $s $icupkg
+
+  file{icudata.lst}: nrm{$name($s)}
+}
+
+# Dependencies and ad hoc recipe for confusables data.
+#
+# Note that the -w gencfu option is deprecated and ignored in the code so,
+# unlike upstream, we omit it and its argument confusablesWholeScript.txt.
+#
+file{confusables.cfu}: unidata/file{confusables.txt}    \
+                       file{cnvalias.icu}               \
+                       $gencfu
+{{
+  $gencfu --copyright --quiet           \
+          --icudatadir $out_base/$btdd  \
+          -r $path($<[0])               \
+          -o $path($>[0])
+}}
+
+file{icudata.lst}: file{confusables.cfu}
+
+# Dependencies for stringprep profile data.
+#
+for s: sprep/file{*.txt}
+{
+  t = spp{$name($s)}
+
+  $t: $s unidata/file{NormalizationCorrections.txt} $gensprep
+
+  file{icudata.lst}: $t
+}
+
+# Generate stringprep profile data (foo.txt -> foo.spp).
+#
+spp{~'/(.+)/'}: file{~'/\1.txt/'}                               \
+                unidata/file{NormalizationCorrections.txt}      \
+                $gensprep
+{{
+  # Note that unlike most of the other tools gensprep does not work with
+  # absolute paths so use of --sourcedir is required.
+  #
+  $gensprep --bundle-name $name($<[0])                  \
+            --norm-correction $src_base/unidata         \
+            --unicode 3.2.0                             \
+            --icudatadir $out_base/$btdd                \
+            --sourcedir $directory($path($<[0]))        \
+            --destdir   $directory($path($>[0]))        \
+            $leaf($path($<[0]))
+}}
+
+# Generate a list of all target paths, relative to `./`. Sort alphabetically
+# but res_index.res has to be at the top of every directory. E.g.:
+#
+# res_index.res
+# af.res
+# af_NA.res
+# af_ZA.res
+# ...
+# brkitr/res_index.res
+# brkitr/burmesedict.dict
+# brkitr/char.brk
+# ...
+#
+file{icudata.lst}:
+{{
+  diag gen $>
+
+  o = $path($>[0]) # Output file path.
+
+  # Generate a sorted list of all data targets (from the prerequisite
+  # targets). Make the paths relative to ./ and sort them.
+  #
+  cont = # Output file contents.
+
+  for t: $<
+    cont += "$path.relative($path($t), $out_base)"
+  end
+
+  cont = $name.sort($cont)
+
+  # Write the targets to the output file, inserting the res_index.res targets
+  # manually as we go along.
+  #
+  # Start with the data directory root's res_index.
+  #
+  echo "$path.relative($path(res{res_index}), $out_base)" > $o
+
+  cd = # Current directory
+  for t: $cont
+    d = $directory($t) # Target directory (if any).
+
+    # Insert res_index if we've entered a new res_index directory.
+    #
+    if (!$empty($d) && $d != $cd && $name.find($res_index_dirs, $name($d)))
+      cd = $d
+      rip = $path($d/res{res_index}) # res_index target path.
+      echo "$path.relative($rip, $out_base)" >> $o
+    end
+
+    echo $t >> $o
+  end
+}}
+
+# Generate res_index.txt for a data directory. See source/data/BUILDRULES.py.
+#
+file{~'/res_index.txt/'}: file{~'/LOCALE_DEPS.json/'}
+{{
+  o  = $path($>[0])             # Output path.
+  sd = $directory($path($<[0])) # Source directory path.
+
+  # Generate a sorted listing of .txt files in the source directory to
+  # initialise the list of input file names.
+  #
+  # @@ TMP Note: have to append `/.` to the path otherwise find refuses to
+  #        operate on it if it's a symlink.
+  #
+  find $sd/. -name \*.txt | set -n ifs # Input files
+  ifs = $name.sort($name($ifs))
+
+  # Remove the "supplemental" resource bundles (handled separately) from the
+  # list of input files. Note that they also need to be excluded from the pool
+  # bundle.
+  #
+  sdn = $leaf($sd) # Source directory name.
+  if ($sdn == 'curr')
+    ifs = $regex.filter_out_match($ifs, '^supplementalData$')
+  elif ($sdn == 'zone')
+    ifs = $regex.filter_out_match($ifs, '^tzdbNames$')
+  end
+
+  depdb hash $ifs
+
+  diag gen $>
+
+  # Read LOCALE_DEPS.json (the first prerequisite), replace C++ comments with
+  # empty lines, and then parse its contents.
+  #
+  cat $path($<[0]) | sed -e 's%^//.*%%' | set ldt # LOCALE_DEPS text
+  ld = $json.parse($ldt) # LOCALE_DEPS parsed JSON
+
+  if ($null($ld) || $json.value_size($ld) == 0)
+    exit "failed to parse $path($<[0])"
+  end
+
+  # Extract the CLDR (Common Locale Data Repository) version and list of
+  # aliases from LOCALE_DEPS.
+  #
+  cldr_version = ($ld["cldrVersion"])
+
+  if ($null($cldr_version))
+    exit "cldrVersion member is missing from $path($<[0])"
+  end
+
+  ao = ($ld["aliases"]) # Aliases object
+  aliases = ($null($ao) ? [null] : $object_names($ao))
+
+  # Generate the contents of the `InstalledLocales:table` section of the
+  # output file from the list of input file names.
+  #
+  # Remove from the list of input file names the aliases and the following set
+  # of exclusions.
+  #
+  # "Exclude the deprecated locale variants and root; see ICU-20628."
+  #
+  excl = ja_JP_TRADITIONAL     \
+	 th_TH_TRADITIONAL     \
+	 de_                   \
+	 de__PHONEBOOK         \
+	 es_                   \
+	 es__TRADITIONAL       \
+	 root
+
+  for a: $aliases $excl
+    ifs = $regex.filter_out_match($ifs, "^\s*$a\$")
+  end
+
+  # Write the output file.
+  #
+  echo "// Warning this file is automatically generated
+  res_index:table\(nofallback\) {
+  CLDRVersion { \"$cldr_version\" }" > $o
+
+  # Write the InstalledLocales:table secion.
+  #
+  echo "  InstalledLocales:table {" >> $o
+  for f: $ifs
+    echo "    $f {\"\"}" >> $o
+  end
+  echo "  }" >> $o
+
+  # Write the AliasLocales:table section.
+  #
+  echo "  AliasLocales:table {" >> $o
+  for a: $aliases
+    echo "    $a {\"\"}" >> $o
+  end
+  echo '  }' >> $o
+
+  echo '}' >> $o
+}}
+
+# Generate a pool bundle (pool.res) from a set of resource bundles.
+#
+res{~'/pool/'}: file{~'/.*.txt/'} $genrb
+{{
+  # Generate a sorted list of input file names from the prerequisites.
+  #
+  # @@ TMP Upstream also passes a sorted list and the order does affect the
+  #    checksum of the output file.
+  #
+  ifs = $name.filter_out($<, exe) # Remove exe{genrb} from the prerequisite list.
+  ifs = $name.sort($name($ifs))
+  ifs = $regex.apply($ifs, '(.+)', '\1.txt') # Append .txt to each name.
+
+  $genrb --quiet                                \
+         --sourcedir  $directory($path($<[0]))  \
+         --destdir    $directory($path($>[0]))  \
+         --icudatadir $out_base/$btdd           \
+         --writePoolBundle -k                   \
+         $ifs
+}}
+
+# Generate a resource bundle (foo.txt -> foo.res).
+#
+res{~'/(.*)/'}: file{~'/\1.txt/'} $genrb
+{{
+  $genrb --quiet                                \
+         --sourcedir  $directory($path($<[0]))  \
+         --destdir    $directory($path($>[0]))  \
+         --icudatadir $out_base/$btdd           \
+         $genrb_options -k                      \
+         $leaf($path($<[0]))
+}}
+
+# Generate dictionary-based break iterator data (foo.txt -> foo.dict).
+#
+dict{~'/(.*)/'}: file{~'/\1.txt/'} $gendict
+{{
+  $gendict --quiet --copyright          \
+           --icudatadir $out_base/$btdd \
+           $gendict_options             \
+           $path($<[0])                 \
+           $path($>[0])
+}}
+
+# Convert an ICU data file (of various types) to the specified endianness.
+#
+icu{~'/(.*)/'}: file{~'/.*.icu/'} $icupkg
+{{
+   $icupkg --type $icu_data_char $path($<[0]) $path($>[0])
+}}
+
+# Convert normalization data to the specified endianness.
+#
+nrm{~'/(.*)/'}: file{~'/.*.nrm/'} $icupkg
+{{
+   $icupkg --type $icu_data_char $path($<[0]) $path($>[0])
+}}
+
+# Generate a conversion mapping table (foo.ucm -> foo.cnv).
+#
+cnv{~'/(.+)/'}: file{~'/\1.ucm/'} $makeconv
+{{
+  $makeconv --copyright                         \
+            --destdir $directory($path($>[0]))  \
+            $path($<[0])
+}}
+
+# Compile break iteration rules: foo.txt -> foo.brk.
+#
+brk{~'/(.+)/'}: file{~'/\1.txt/'} $genbrk
+{{
+  # genbrk [-options] -r rule-file -o output-file
+  #
+  $genbrk --quiet --copyright           \
+          --icudatadir $out_base/$btdd  \
+          -r $path($<[0])               \
+          -o $path($>[0])
+}}
+
+# Install the data archive next to the icudata library to make it easier for
+# the tools to find.
+#
+file{$(data_name).dat}: install = lib/

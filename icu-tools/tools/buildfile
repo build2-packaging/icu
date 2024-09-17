@@ -1,6 +1,186 @@
-libs =
-#import libs += libhello%lib{hello}
+# file      : tools/buildfile
+# license   : Unicode License; see accompanying LICENSE file
 
-exe{icu-tools}: {hxx ixx txx h cxx c}{**} $libs testscript
+# The bootstrap library is used to break the circular dependency chain icuuc
+# -> icudata -> tools -> icuuc. See its buildfile for more details.
+#
+include ../icu-bootstrap/
 
-cc.poptions =+ "-I$out_root" "-I$src_root"
+tools = escapesrc       \
+        genbrk          \
+        genccode        \
+        gencfu          \
+        gencmn          \
+        gencnval        \
+        gendict         \
+        gennorm2        \
+        genrb           \
+        gensprep        \
+        icuexportdata   \
+        icuinfo         \
+        icupkg          \
+        makeconv        \
+        pkgdata
+
+# Dependencies for the tools, all of which have the same form except for
+# genrb/{genrb,derb} (see below) and genccode which has a generated source
+# file.
+#
+for t: $regex.filter_out_search($tools, 'genrb|genccode')
+{
+  ./: $t/exe{$t}: $t/{hxx cxx c}{*} \
+                  ../icu-bootstrap/libue{icu-bootstrap}
+
+  # Dependencies on the installed- and development-specific bootstrap
+  # libraries.
+  #
+  $t/exe{$t}: ../icu-bootstrap/libue{icu-bootstrap-install}: for_install = true
+  $t/exe{$t}: ../icu-bootstrap/libue{icu-bootstrap-develop}: for_install = false
+}
+
+# Note: genccode.c is a generated source file.
+#
+./: genccode/exe{genccode}: genccode/c{genccode} \
+                            ../icu-bootstrap/libue{icu-bootstrap}
+
+# Dependencies for the genrb and derb tools (which share the genrb/
+# subdirectory).
+#
+# Note that derb is the only tool that requires libicuio (and derb is not used
+# to produce the data library).
+#
+./: genrb/exe{genrb}: genrb/{hxx cxx c}{* -derb} \
+                      ../icu-bootstrap/libue{icu-bootstrap}
+
+./: genrb/exe{derb}: genrb/cxx{derb} \
+                     ../icu-bootstrap/libue{icu-bootstrap}
+
+# Dependencies on the installed- and development-specific bootstrap libraries.
+#
+genrb/exe{genrb derb} genccode/exe{genccode} : \
+  ../icu-bootstrap/libue{icu-bootstrap-install}: for_install = true
+genrb/exe{genrb derb} genccode/exe{genccode}: \
+  ../icu-bootstrap/libue{icu-bootstrap-develop}: for_install = false
+
+# Export metadata from the tool executables.
+#
+for t: $tools
+{
+  $t/exe{$t}:
+  {
+    export.metadata = 1 $t
+    "$t".name = [string] $t
+    "$t".version  = [string] $version
+    "$t".checksum = [string] $version
+  }
+}
+
+genrb/exe{derb}:
+{
+  export.metadata = 1 derb
+  "derb".name = [string] derb
+  "derb".version  = [string] $version
+  "derb".checksum = [string] $version
+}
+
+# The libicuuc package uses the genccode tool to embed the data archive into
+# the ICU data library. Unfortunately there would be little point in exporting
+# a file{} target because there is no rule-specific search to find it in the
+# installed case. Therefore the best we can do is to export the path as
+# metadata from the genccode executable.
+#
+# Include data/ to make the data archive target available for consuming
+# development builds to depend on.
+#
+include ../data/
+
+genccode/exe{genccode}:
+{
+  # These values are defined in root.build.
+  #
+  genccode.data_basename = [string] "$data_basename" # icudt74
+  genccode.data_name     = [string] "$data_name"     # icudt74l
+
+  # Path to the ICU data archive.
+  #
+  genccode.datfile_path             = [path] $data_dir_develop/$(data_name).dat
+  genccode.datfile_path.for_install = [path] $data_dir_install/$(data_name).dat
+}
+
+# Export the same metadata as above from the main function.
+#
+genccode/c{genccode}: genccode/in{genccode}
+{
+  genccode = genccode/exe{genccode}
+
+  data_basename = $($genccode: genccode.data_basename)
+  data_name     = $($genccode: genccode.data_name)
+
+  datfile_path    = [path] $($genccode: genccode.datfile_path)
+  datfile_path_fi = [path] $($genccode: genccode.datfile_path.for_install)
+
+  # Escape backslashes on Windows.
+  #
+  datfile_path    = [path] $regex.replace($datfile_path,    '\\', '\\\\')
+  datfile_path_fi = [path] $regex.replace($datfile_path_fi, '\\', '\\\\')
+}
+
+# Arrange for the data archive to be updated after any tool executable is
+# updated.
+#
+for n: $tools
+  $n/exe{$n}: ../data/file{$(data_name).dat}: include = posthoc
+
+# Test that the tools can load the default ICU data.
+#
+# `icuinfo -v` is one command known to fail if the default data cannot be
+# accessed.
+#
+icuinfo/exe{icuinfo}: testscript{icuinfo-load-icudata}
+
+# Build options that apply to all targets (i.e., the tools and the bootstrap
+# library).
+#
+# Note that we build without plugins support (UCONFIG_ENABLE_PLUGINS macro is
+# undefined) and thus we don't define the DEFAULT_ICU_PLUGINS macro either.
+#
+c.coptions += $common_cc_coptions
+cxx.coptions += $common_cc_coptions $common_cxx_coptions
+
+# Build options and libraries for the tool executables.
+#
+for t: $tools
+{
+  $t/
+  {
+    cc.poptions =+ "-I$src_root/icu-bootstrap/uc"       \
+                   "-I$src_root/icu-bootstrap/i18n"     \
+                   "-I$src_root/icu-bootstrap/toolutil"
+
+    cc.poptions += -DU_STATIC_IMPLEMENTATION            \
+                   -DUNISTR_FROM_CHAR_EXPLICIT=explicit \
+                   -DUNISTR_FROM_STRING_EXPLICIT=explicit
+
+    if ($cxx.class == 'msvc')
+    {
+      # Disable warnings that pop up with /W3.
+      #
+      # 4267: conversion from 'size_t' to 'int32_t', possible loss of data
+      # 4805: '==': unsafe mix of type 'UBool' and type 'bool' in operation
+      #
+      cc.coptions += /wd4244 /wd4267 /wd4805
+    }
+
+    cxx.libs += $common_cxx_libs
+  }
+}
+
+genrb/obj{derb}: cc.poptions =+ "-I$src_root/icu-bootstrap/io"
+
+exe{escapesrc/escapesrc \
+    genccode/genccode   \
+    gencmn/gencmn       \
+    gennorm2/gennorm2   \
+    gensprep/gensprep   \
+    icupkg/icupkg}:     \
+  install = sbin/

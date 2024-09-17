@@ -1,0 +1,14 @@
+# file      : build/export.build
+# license   : Unicode License; see accompanying LICENSE file
+
+$out_root/
+{
+  include tools/
+}
+
+# tools/genrb/exe{derb} is unique in that it is in another tool's
+# subdirectory.
+#
+d = ($import.target == exe{derb} ? genrb : $name($import.target))
+
+export $out_root/tools/$d/$import.target

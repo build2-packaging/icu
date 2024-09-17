@@ -18,6 +18,36 @@ using c
 h{*}: extension = h
 c{*}: extension = c
 
+using in
+
+using c.as-cpp
+
 # The test target for cross-testing (running tests under Wine, etc).
 #
 test.target = $cxx.target
+
+# Resource bundle.
+#
+define res: file
+res{*}: extension = res
+
+# @@ TMP OK to assume LE, or should we make this configurable?
+#
+icu_data_char = 'l' # l for little-endian, b for big-endian.
+
+# These variables correspond to the upstream ICUDATA_BASENAME_VERSION and
+# ICUDATA_PLATFORM_NAME respectively.
+#
+data_basename = "icudt$(version.major)"    # icudt74
+data_name = "$data_basename$icu_data_char" # icudt74l
+
+# The ICU data directory path for the installed and develop cases. This is the
+# directory that contains the ICU data archive.
+#
+data_dir_develop = [dir_path] $out_root/data
+data_dir_install = [dir_path] ($install.root != [null]          \
+                               ? $install.resolve($install.lib) \
+                               : .)
+
+if ($build.mode != 'skeleton')
+  source build/common.build
