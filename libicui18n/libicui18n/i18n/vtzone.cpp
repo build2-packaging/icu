@@ -998,7 +998,7 @@ VTimeZone::operator=(const VTimeZone& right) {
     if (this == &right) {
         return *this;
     }
-    if (*this != right) {
+    if (!(*this == right)) {
         BasicTimeZone::operator=(right);
         if (tz != nullptr) {
             delete tz;
