@@ -4,11 +4,24 @@
 $out_root/
 {
   include tools/
+
+  include data/
 }
 
-# tools/genrb/exe{derb} is unique in that it is in another tool's
-# subdirectory.
-#
-d = ($import.target == exe{derb} ? genrb : $name($import.target))
+n = $name($import.target)
+e = $extension($import.target)
 
-export $out_root/tools/$d/$import.target
+# If the target is `file{icudtXXX.dat}`, export the ICU data archive;
+# otherwise export one of the tools.
+#
+if ($regex.match($n, 'icudt.+') && $e == 'dat')
+  export $out_root/data/$import.target
+else
+{
+  # tools/genrb/exe{derb} is unique in that it is in another tool's
+  # subdirectory.
+  #
+  d = ($import.target == exe{derb} ? genrb : $n)
+
+  export $out_root/tools/$d/$import.target
+}

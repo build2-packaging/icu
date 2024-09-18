@@ -101,9 +101,11 @@ genccode/exe{genccode}:
   genccode.data_basename = [string] "$data_basename" # icudt74
   genccode.data_name     = [string] "$data_name"     # icudt74l
 
-  # Path to the ICU data archive.
+  # Path to the ICU data archive. Make it null in the develop case to signal
+  # to consumers that they can import the target (i.e., as opposed to creating
+  # their own local file{} target).
   #
-  genccode.datfile_path             = [path] $data_dir_develop/$(data_name).dat
+  genccode.datfile_path             = [path] [null]
   genccode.datfile_path.for_install = [path] $data_dir_install/$(data_name).dat
 }
 
@@ -116,12 +118,11 @@ genccode/c{genccode}: genccode/in{genccode}
   data_basename = $($genccode: genccode.data_basename)
   data_name     = $($genccode: genccode.data_name)
 
-  datfile_path    = [path] $($genccode: genccode.datfile_path)
+  datfile_path    = '[path] [null]'
   datfile_path_fi = [path] $($genccode: genccode.datfile_path.for_install)
 
   # Escape backslashes on Windows.
   #
-  datfile_path    = [path] $regex.replace($datfile_path,    '\\', '\\\\')
   datfile_path_fi = [path] $regex.replace($datfile_path_fi, '\\', '\\\\')
 }
 
