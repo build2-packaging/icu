@@ -96,11 +96,6 @@ include ../data/
 
 genccode/exe{genccode}:
 {
-  # These values are defined in root.build.
-  #
-  genccode.data_basename = [string] "$data_basename" # icudt74
-  genccode.data_name     = [string] "$data_name"     # icudt74l
-
   # Path to the ICU data archive. Make it null in the develop case to signal
   # to consumers that they can import the target (i.e., as opposed to creating
   # their own local file{} target).
@@ -114,9 +109,6 @@ genccode/exe{genccode}:
 genccode/c{genccode}: genccode/in{genccode}
 {
   genccode = genccode/exe{genccode}
-
-  data_basename = $($genccode: genccode.data_basename)
-  data_name     = $($genccode: genccode.data_name)
 
   datfile_path    = '[path] [null]'
   datfile_path_fi = [path] $($genccode: genccode.datfile_path.for_install)
