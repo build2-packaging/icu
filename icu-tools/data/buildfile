@@ -50,15 +50,10 @@ btdd = [dir_path] build-time-data-dir
 
 # The ICU data archive.
 #
-# The prerequisite icudata.lst is a list of all data target paths, relative to
-# `./`, and it has all of the binary data files as prerequisites.
+# Note: The data file targets and file{icudata.lst} are added as prerequisites
+# below, just before the ad hoc recipe that generates file{icudata.lst}.
 #
-#   @@ TMP Would have liked to make the binary data files ad hoc prereqs to
-#      prevent icudata.lst from being re-generated every time a data file
-#      changes. Is there a way to access ad hoc prereqs inside an ad hoc
-#      recipe?
-#
-file{$(data_name).dat}: file{$btdd/$data_name} file{icudata.lst} $pkgdata
+file{$(data_name).dat}: file{$btdd/$data_name} $pkgdata
 {{
   # --mode common: Produce the data archive (.dat) only.
   #
@@ -68,7 +63,7 @@ file{$(data_name).dat}: file{$btdd/$data_name} file{icudata.lst} $pkgdata
            --sourcedir $out_base        \
            --destdir   $out_base        \
            --tempdir   $out_base        \
-           $path($<[1])
+           $path(file{icudata.lst})
 }}
 
 # Create the build-time ICU data directory path (see above).
@@ -144,10 +139,10 @@ file{cnvalias.icu}: mappings/file{convrtrs.txt} $gencnval
             $leaf($path($<[0]))
 }}
 
-# Add cnvalias as a prerequisite of icudata.lst. (Its list of prerequisites
-# will be updated like this throughout the rest of the file.)
+# Add cnvalias.icu to icudata.lst's list of targets (which will be further
+# updated like this throughout the rest of the file).
 #
-file{icudata.lst}: file{cnvalias.icu}
+file{icudata.lst}: targets += file{cnvalias.icu}
 
 # Dependencies for the res_index.res targets that are required for the
 # following directories.
@@ -180,7 +175,7 @@ for d: $res_index_dirs
   $t: $s $genrb
   $s: $sd/file{LOCALE_DEPS.json}
 
-  file{icudata.lst}: $t
+  file{icudata.lst}: targets += $t
 }
 
 # Dependencies for the res{*} targets in rbnf/.
@@ -190,7 +185,7 @@ for s: rbnf/file{*.txt}
   t = rbnf/res{$name($s)}
   $t: $s $genrb
 
-  file{icudata.lst}: $t
+  file{icudata.lst}: targets += $t
 }
 
 # Dependencies for coll/ucadata.icu, generated from
@@ -198,7 +193,7 @@ for s: rbnf/file{*.txt}
 #
 coll/icu{ucadata}: in/coll/file{ucadata-unihan.icu} $icupkg
 
-file{icudata.lst}: coll/icu{ucadata}
+file{icudata.lst}: targets += coll/icu{ucadata}
 
 coll/icu{ucadata}: in/coll/file{ucadata-unihan-*}       \
                    in/coll/file{ucadata-implicithan*}: include = false
@@ -213,7 +208,7 @@ for s: misc/file{*.txt}
 
   $t: $s $genrb file{cnvalias.icu}
 
-  file{icudata.lst}: $t
+  file{icudata.lst}: targets += $t
 }
 
 fsdir{filters/coll_tree/}: fsdir{filters/}
@@ -241,7 +236,7 @@ for s: coll/file{*.txt}
   #
   filters/coll_tree/flt{$name($s)}: fsdir{filters/coll_tree/}
 
-  file{icudata.lst}: $t
+  file{icudata.lst}: targets += $t
 }
 
 # Generate a collation data filter file. These filters are applied by default
@@ -293,12 +288,12 @@ for d: curr     \
     $t: $s $genrb $od/res{pool}
     $t: genrb_options += --usePoolBundle "$out_base/$od"
 
-    file{icudata.lst}: $t
+    file{icudata.lst}: targets += $t
   }
 
   $od/res{pool}: $sd/file{*.txt -{$excl}} $genrb
 
-  file{icudata.lst}: $od/res{pool}
+  file{icudata.lst}: targets += $od/res{pool}
 }
 
 # These "supplemental" resource bundles are not included in their
@@ -308,8 +303,8 @@ for d: curr     \
 curr/res{supplementalData}: curr/file{supplementalData.txt} $genrb
 zone/res{tzdbNames}:        zone/file{tzdbNames.txt}        $genrb
 
-file{icudata.lst}: curr/res{supplementalData} \
-                   zone/res{tzdbNames}
+file{icudata.lst}: targets += curr/res{supplementalData}        \
+                              zone/res{tzdbNames}
 
 # Dependencies for rule-based transform (transliterator) data.
 #
@@ -319,7 +314,7 @@ translit/res{el}:   translit/file{el.txt}   $genrb
 
 translit/res{root en el}: translit/file{*.txt -{root.txt en.txt el.txt}}
 
-file{icudata.lst}: translit/res{root en el}
+file{icudata.lst}: targets += translit/res{root en el}
 
 # Dependencies for dictionary-based break iterator data (brkiter/dict{*}).
 #
@@ -341,7 +336,7 @@ brkitr/dict{khmerdict}:   gendict_options += --bytes --transform offset-0x1780
 brkitr/dict{laodict}:     gendict_options += --bytes --transform offset-0x0e80
 brkitr/dict{thaidict}:    gendict_options += --bytes --transform offset-0x0e00
 
-file{icudata.lst}: $dict_trgs
+file{icudata.lst}: targets += $dict_trgs
 
 # See source/data/BUILDRULES.py for why the other .icu files in in/ are
 # excluded.
@@ -353,7 +348,7 @@ for s: in/file{unames.icu ulayout.icu uemoji.icu}
 
   $t: $s $icupkg
 
-  file{icudata.lst}: $t
+  file{icudata.lst}: targets += $t
 }
 
 # Dependencies for rule-based break iterator data (brkitr/rules/foo.txt ->
@@ -376,7 +371,7 @@ for s: brkitr/rules/file{*.txt}
   brkitr_brk_trgs += $t
 }
 
-file{icudata.lst}: $brkitr_brk_trgs
+file{icudata.lst}: targets += $brkitr_brk_trgs
 
 # Dependencies for the res{*} targets in brkitr/.
 #
@@ -386,7 +381,7 @@ for s: brkitr/file{*.txt}
 
   $t: $s $genrb $dict_trgs $brkitr_brk_trgs
 
-  file{icudata.lst}: $t
+  file{icudata.lst}: targets += $t
 }
 
 # Dependencies for conversion mapping tables (foo.ucm -> foo.cnv).
@@ -400,7 +395,7 @@ for s: mappings/file{*.ucm...}
 
   $t: $s $makeconv
 
-  file{icudata.lst}: $t
+  file{icudata.lst}: targets += $t
 }
 
 # Dependencies for normalization data (in/foo.nrm -> foo.nrm). See
@@ -410,7 +405,7 @@ for s: in/file{*.nrm -nfc.nrm}
 {
   nrm{$name($s)}: $s $icupkg
 
-  file{icudata.lst}: nrm{$name($s)}
+  file{icudata.lst}: targets += nrm{$name($s)}
 }
 
 # Dependencies and ad hoc recipe for confusables data.
@@ -428,7 +423,7 @@ file{confusables.cfu}: unidata/file{confusables.txt}    \
           -o $path($>[0])
 }}
 
-file{icudata.lst}: file{confusables.cfu}
+file{icudata.lst}: targets += file{confusables.cfu}
 
 # Dependencies for stringprep profile data.
 #
@@ -438,7 +433,7 @@ for s: sprep/file{*.txt}
 
   $t: $s unidata/file{NormalizationCorrections.txt} $gensprep
 
-  file{icudata.lst}: $t
+  file{icudata.lst}: targets += $t
 }
 
 # Generate stringprep profile data (foo.txt -> foo.spp).
@@ -459,6 +454,16 @@ spp{~'/(.+)/'}: file{~'/\1.txt/'}                               \
             $leaf($path($<[0]))
 }}
 
+# Insert the data targets into the data archive's prerequisites before
+# icudata.lst to ensure their paths will be resolved before icudata.lst is
+# generated. Although this would usually be expressed by making the data
+# targets prerequisites of icudata.lst, that would cause the latter to be
+# updated whenever the contents of any data target changed which is not the
+# correct semantics. (Note that a modification of the `targets` variable will
+# automatically render the icudata.lst target out of date.)
+#
+file{$(data_name).dat}: $(file{icudata.lst}: targets) file{icudata.lst}
+
 # Generate a list of all target paths, relative to `./`. Sort alphabetically
 # but res_index.res has to be at the top of every directory. E.g.:
 #
@@ -478,12 +483,12 @@ file{icudata.lst}:
 
   o = $path($>[0]) # Output file path.
 
-  # Generate a sorted list of all data targets (from the prerequisite
-  # targets). Make the paths relative to ./ and sort them.
+  # Generate a sorted list of all data targets. Make the paths relative to ./
+  # and sort them.
   #
   cont = # Output file contents.
 
-  for t: $<
+  for t: $targets
     cont += "$path.relative($path($t), $out_base)"
   end
 
