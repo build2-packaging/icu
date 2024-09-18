@@ -3,15 +3,9 @@
 
 import! [metadata] genccode = icu-tools%exe{genccode}
 
-# These variables correspond to the upstream ICUDATA_BASENAME_VERSION and
-# ICUDATA_PLATFORM_NAME respectively.
-#
-data_basename = $($genccode: genccode.data_basename) # icudt74
-data_name     = $($genccode: genccode.data_name)     # icudt74l
-
 # The path to the ICU data archive.
 #
-datfile_path  = $($genccode: genccode.datfile_path)
+datfile_path = $($genccode: genccode.datfile_path)
 
 # If genccode defines a path for the ICU data archive then the icu-tools
 # package is installed, in which case create a local file{} target from the
