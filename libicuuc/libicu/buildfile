@@ -3,6 +3,25 @@
 
 import! [metadata] genccode = icu-tools%exe{genccode}
 
+# These variables correspond to the upstream ICUDATA_BASENAME_VERSION and
+# ICUDATA_PLATFORM_NAME respectively.
+#
+data_basename = $($genccode: genccode.data_basename) # icudt74
+data_name     = $($genccode: genccode.data_name)     # icudt74l
+
+# The path to the ICU data archive.
+#
+datfile_path  = $($genccode: genccode.datfile_path)
+
+# If genccode defines a path for the ICU data archive then the icu-tools
+# package is installed, in which case create a local file{} target from the
+# exported path; otherwise import the exported data archive file{} target.
+#
+if $empty($datfile_path)
+  import! datfile = icu-tools%file{$(data_name).dat}
+else
+  datfile = file{$datfile_path}
+
 macos = ($tclass == 'macos')
 
 # Note that some of the uc/unicode/*.h files are C++ headers and some are C
@@ -28,16 +47,6 @@ lib{icuuc}: uc/hxx{** -unicode/*} uc/unicode/h{*} \
 # do it differently.
 #
 
-# These variables correspond to the upstream ICUDATA_BASENAME_VERSION and
-# ICUDATA_PLATFORM_NAME respectively.
-#
-data_basename = $($genccode: genccode.data_basename) # icudt74
-data_name     = $($genccode: genccode.data_name)     # icudt74l
-
-# The path to the ICU data archive.
-#
-datfile_path  = $($genccode: genccode.datfile_path)
-
 # If true, generate assembly from the data archive; otherwise generate the
 # object file directly.
 #
@@ -49,15 +58,15 @@ asm = (!$windows || $mingw)
 #
 lib{icudata}: data/S{$(data_name)_dat}: include = $asm
 
-data/S{$(data_name)_dat}: file{$datfile_path} $genccode
+data/S{$(data_name)_dat}: $datfile $genccode
 
 # Dependencies for the object file case (note: Windows only).
 #
 libs{icudata}: data/objs{$(data_name)_dat.so.obj}: include = (!$asm)
 liba{icudata}: data/obja{$(data_name)_dat.a.obj}:  include = (!$asm)
 
-data/objs{$(data_name)_dat.so.obj}: file{$datfile_path} data/objs{oma} $genccode
-data/obja{$(data_name)_dat.a.obj}:  file{$datfile_path} data/obja{oma} $genccode
+data/objs{$(data_name)_dat.so.obj}: $datfile data/objs{oma} $genccode
+data/obja{$(data_name)_dat.a.obj}:  $datfile data/obja{oma} $genccode
 
 # Object file used by genccode to determine the CPU architecture. Name taken
 # from upstream and stands for "OptMatchArch".
@@ -76,7 +85,7 @@ switch $tclass, $tsys
     asm_type = 'gcc-mingw64'
 }
 
-data/S{$(data_name)_dat}: file{$datfile_path} $genccode
+data/S{$(data_name)_dat}: $datfile $genccode
 {{
   # --entrypoint: Library entry point name; will be suffixed with _dat.
   # --assembly:   Output assembly code.
@@ -85,12 +94,12 @@ data/S{$(data_name)_dat}: file{$datfile_path} $genccode
             --destdir $directory($path($>[0]))  \
             --entrypoint $data_basename         \
             --assembly $asm_type                \
-            $datfile_path
+            $path($<[0])
 }}
 
 # Generate the object files.
 #
-data/objs{$(data_name)_dat.so.obj}: file{$datfile_path} data/objs{oma} $genccode
+data/objs{$(data_name)_dat.so.obj}: $datfile data/objs{oma} $genccode
 {{
   # --object:     Output an object file (instead of assembly code).
   # --match-arch: Match the architecture (CPU, 32/64 bits) of this object
@@ -103,10 +112,10 @@ data/objs{$(data_name)_dat.so.obj}: file{$datfile_path} data/objs{oma} $genccode
             --object                            \
             --match-arch $path($<[1])           \
             --filename $(data_name)_dat.so      \
-            $datfile_path
+            $path($<[0])
 }}
 
-data/obja{$(data_name)_dat.a.obj}: file{$datfile_path} data/obja{oma} $genccode
+data/obja{$(data_name)_dat.a.obj}: $datfile data/obja{oma} $genccode
 {{
   # --skip-dll-export: Don't export the ICU data entry point symbol.
   #
@@ -117,7 +126,7 @@ data/obja{$(data_name)_dat.a.obj}: file{$datfile_path} data/obja{oma} $genccode
             --match-arch $path($<[1])           \
             --filename $(data_name)_dat.a       \
             --skip-dll-export                   \
-            $datfile_path
+            $path($<[0])
 }}
 
 # Build options.
