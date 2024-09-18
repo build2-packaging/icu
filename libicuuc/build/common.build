@@ -6,7 +6,22 @@ macos   = ($tclass == 'macos')
 windows = ($tclass == 'windows')
 mingw   = ($windows && $tsys == 'windows')
 
+# Only x86 and ARM supported from Windows 2000 onwards.
+#
 win64 = ($tcpu == 'x86_64'|| $tcpu == 'aarch64')
+
+# @@ TMP The next 3 variables are only referenced in icu-tools and
+#    libicuuc. Should be move them to something like data-common.build?
+#
+# @@ TMP OK to assume LE, or should we make this configurable?
+#
+icu_data_char = 'l' # l for little-endian, b for big-endian.
+
+# These variables correspond to the upstream ICUDATA_BASENAME_VERSION and
+# ICUDATA_PLATFORM_NAME respectively.
+#
+data_basename = "icudt$(version.major)"        # icudt74
+data_name     = "$data_basename$icu_data_char" # icudt74l
 
 # Build options.
 #
