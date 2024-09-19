@@ -53,7 +53,7 @@ btdd = [dir_path] build-time-data-dir
 # Note: The data file targets and file{icudata.lst} are added as prerequisites
 # below, just before the ad hoc recipe that generates file{icudata.lst}.
 #
-file{$(data_name).dat}: file{$btdd/$data_name} $pkgdata
+file{$(data_name).dat}: fsdir{$btdd/$data_name} $pkgdata
 {{
   # --mode common: Produce the data archive (.dat) only.
   #
@@ -68,10 +68,14 @@ file{$(data_name).dat}: file{$btdd/$data_name} $pkgdata
 
 # Create the build-time ICU data directory path (see above).
 #
-file{$btdd/$data_name}: fsdir{$btdd/}
+fsdir{$btdd/$data_name}: fsdir{$btdd/}
+% update
 {{
-  rm -f $path($>[0])
-  ln -s ../ $path($>[0])
+  ln -s $out_base/ $out_base/$btdd/$data_name
+}}
+% clean
+{{
+  rm $out_base/$btdd/$data_name/
 }}
 
 # Binary data file target types.

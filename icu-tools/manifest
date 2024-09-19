@@ -17,8 +17,8 @@ email: icu-support@lists.sourceforge.net ; Mailing list.
 package-email: packaging@build2.org      ; Mailing list.
 build-error-email: builds@build2.org
 builds: all
-depends: * build2 >= 0.13.0
-depends: * bpkg >= 0.13.0
+depends: * build2 >= 0.17.0
+depends: * bpkg >= 0.17.0
 
 # System package mapping.
 #
