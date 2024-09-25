@@ -4,16 +4,17 @@ tcpu   = $cc.target.cpu
 
 macos   = ($tclass == 'macos')
 windows = ($tclass == 'windows')
-mingw   = ($windows && $tsys == 'windows')
+mingw   = ($windows && $tsys == 'windows') # @@ migw32?
 
 # Only x86 and ARM supported from Windows 2000 onwards.
 #
 win64 = ($tcpu == 'x86_64'|| $tcpu == 'aarch64')
 
-# @@ TMP The next 3 variables are only referenced in icu-tools and
-#    libicuuc. Should be move them to something like data-common.build?
+# Note: the next 3 variables are only referenced in icu-tools and
+# libicuuc.
 #
 # @@ TMP OK to assume LE, or should we make this configurable?
+#    Let's wait until this functionality is added to build2.
 #
 icu_data_char = 'l' # l for little-endian, b for big-endian.
 
@@ -29,7 +30,7 @@ data_name     = "$data_basename$icu_data_char" # icudt74l
 # undefined) and thus we don't define the DEFAULT_ICU_PLUGINS macro either.
 #
 # Macros are defined in the following files:
-# 
+#
 #    source/configure
 #    source/icudefs.mk.in
 #    source/**/Makefile.in
@@ -102,7 +103,7 @@ switch $cxx.class
   }
   case 'msvc'
   {
-    common_cc_coptions  += /W3 /utf-8 /GF /Gy
+    common_cc_coptions  += /W3 /GF /Gy
     common_cxx_coptions += /Zc:wchar_t
   }
 }
@@ -119,20 +120,20 @@ switch $tclass, $tsys
     lib_cc_loptions += -Wl,-Bsymbolic \
 		       -Wl,--no-undefined # Make sure all symbols are resolvable.
 
-    common_cxx_libs += -lpthread -ldl -lm
+    common_cxx_libs += -pthread -ldl -lm
   }
   case 'bsd'
   {
     lib_cc_loptions += -Wl,-Bsymbolic
-    common_cxx_libs += -lpthread -lm
+    common_cxx_libs += -pthread -lm
   }
   case 'macos'
   {
-    common_cxx_libs += -lpthread -lm
+    common_cxx_libs += -pthread -lm
   }
   case 'windows', 'mingw32'
   {
-    # We omit -lpthread -lm that seems to be redundant (see note about
+    # We omit -pthread -lm that seems to be redundant (see note about
     # -mthreads above).
     #
     lib_cc_loptions += -Wl,--enable-auto-import \

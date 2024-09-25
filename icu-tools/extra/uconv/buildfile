@@ -5,6 +5,8 @@ import! [metadata] genrb = exe{genrb}
 import! [metadata] pkgdata = exe{pkgdata}
 import! [metadata] genccode = exe{genccode}
 
+# @@ include icu-bootstrap (audit all other places).
+
 data_name = uconvmsg
 
 ./exe{uconv}: cxx{*} c{*} unicode/h{*}    \
@@ -45,14 +47,14 @@ $data_name/S{$(data_name)_dat}: $data_name/file{$(data_name).dat} $genccode
 
 # Dependencies for the object file case (note: Windows only).
 #
-# Use the `.dat.obj` extension to differentiate this object file from the one
-# generated from the assembly source file.
+# Use the `_c` suffix to differentiate this object file from the one generated
+# from the assembly source file.
 #
-libue{$data_name}: $data_name/obje{$(data_name)_dat.dat.obj}: include = (!$asm)
+libue{$data_name}: $data_name/obje{$(data_name)_dat_c.obj}: include = (!$asm)
 
-$data_name/obje{$(data_name)_dat.dat.obj}: $data_name/file{$(data_name).dat}    \
-                                           obje{$data_name/oma}                 \
-                                           $genccode
+$data_name/obje{$(data_name)_dat_c.obj}: $data_name/file{$(data_name).dat}   \
+                                         obje{$data_name/oma}                \
+                                         $genccode
 
 # Object file used by genccode to determine the CPU architecture. Name taken
 # from upstream and stands for "OptMatchArch".
@@ -130,8 +132,8 @@ $data_name/S{$(data_name)_dat}: $data_name/file{$(data_name).dat} $genccode
 
 # Generate the object file.
 #
-$data_name/obje{$(data_name)_dat.dat.obj}: $data_name/file{$(data_name).dat}    \
-                                           $data_name/obje{oma} $genccode
+$data_name/obje{$(data_name)_dat_c.obj}: $data_name/file{$(data_name).dat}    \
+                                         $data_name/obje{oma} $genccode
 {{
   # --skip-dll-export: Don't export the ICU data entry point symbol (Windows only).
   # --object:          Output an object file (instead of assembly code).

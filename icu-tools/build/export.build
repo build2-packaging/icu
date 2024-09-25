@@ -1,6 +1,8 @@
 # file      : build/export.build
 # license   : Unicode License; see accompanying LICENSE file
 
+# @@ export uconv?
+
 $out_root/
 {
   include tools/
@@ -14,7 +16,7 @@ e = $extension($import.target)
 # If the target is `file{icudtXXX.dat}`, export the ICU data archive;
 # otherwise export one of the tools.
 #
-if ($regex.match($n, 'icudt.+') && $e == 'dat')
+if ($regex.match($n, 'icudt.+') && $e == 'dat') # Use $string.begins_with()?
   export $out_root/data/$import.target
 else
 {

@@ -1,4 +1,4 @@
-# file      : tools/icu-bootstrap/buildfile
+# file      : icu-bootstrap/buildfile
 # license   : Unicode License; see accompanying LICENSE file
 
 # The bootstrap library consists of the icucu, icui18n, icuio, and icutu
@@ -11,7 +11,8 @@
 #
 #   icuuc -> icudata -> data tools -> icu-bootstrap
 #
-# See the root README-DEV for more details.
+# Note that data tools still need data normally found in icudata. So for tools
+# we instead use the data archive. See the root README-DEV for more details.
 #
 # Note that io/ is required only by the derb tool.
 #
@@ -53,9 +54,9 @@ uc/
   if $macos
   {
     # Note that upstream requests the POSIX 2004 compliance (see
-    # uc/uposixdefs.h for details). This results with compilation errors for
+    # uc/uposixdefs.h for details). This results in compilation errors for
     # some source files when build on MacOS with gcc (as of 9.2; GCC issues
-    # 93151 and 93469 are reported). We workaround the issue disabling this
+    # 93151 and 93469 are reported). We workaround the issue by disabling this
     # POSIX compliance request for the faulty source files (luckily the
     # request is redundant for them).
     #

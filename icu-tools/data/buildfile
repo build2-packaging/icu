@@ -132,8 +132,6 @@ file{cnvalias.icu}: mappings/file{convrtrs.txt} $gencnval
   # rebuilt with the install-specific ICU data directory and thus the data
   # will be generated for a second time.
   #
-  #   @@ TMP Do we need to find a cleaner/more permanent solution?
-  #
   rm -f $path($>[0])
 
   # Note that the output file is always called cnvalias.icu.
@@ -532,7 +530,7 @@ file{~'/res_index.txt/'}: file{~'/LOCALE_DEPS.json/'}
   # initialise the list of input file names.
   #
   # @@ TMP Note: have to append `/.` to the path otherwise find refuses to
-  #        operate on it if it's a symlink.
+  #        operate on it if it's a symlink. build2 GH issue #434?
   #
   find $sd/. -name \*.txt | set -n ifs # Input files
   ifs = $name.sort($name($ifs))
@@ -625,8 +623,8 @@ res{~'/pool/'}: file{~'/.*.txt/'} $genrb
 {{
   # Generate a sorted list of input file names from the prerequisites.
   #
-  # @@ TMP Upstream also passes a sorted list and the order does affect the
-  #    checksum of the output file.
+  # Note: upstream also passes a sorted list and the order does affect the
+  # checksum of the output file.
   #
   ifs = $name.filter_out($<, exe) # Remove exe{genrb} from the prerequisite list.
   ifs = $name.sort($name($ifs))
@@ -698,7 +696,6 @@ brk{~'/(.+)/'}: file{~'/\1.txt/'} $genbrk
           -o $path($>[0])
 }}
 
-# Install the data archive next to the icudata library to make it easier for
-# the tools to find.
+# Install the data archive for the tools to find.
 #
-file{$(data_name).dat}: install = lib/
+file{$(data_name).dat}: install = data/
