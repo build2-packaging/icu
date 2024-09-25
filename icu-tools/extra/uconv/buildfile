@@ -5,7 +5,7 @@ import! [metadata] genrb = exe{genrb}
 import! [metadata] pkgdata = exe{pkgdata}
 import! [metadata] genccode = exe{genccode}
 
-# @@ include icu-bootstrap (audit all other places).
+include ../../icu-bootstrap/
 
 data_name = uconvmsg
 
@@ -147,7 +147,7 @@ $data_name/obje{$(data_name)_dat_c.obj}: $data_name/file{$(data_name).dat}    \
             --skip-dll-export                   \
             --object                            \
             --match-arch $path($<[1])           \
-            --filename $(data_name)_dat.dat     \
+            --filename $(data_name)_dat_c       \
             $path($<[0])
 }}
 

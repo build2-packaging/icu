@@ -1,12 +1,10 @@
 # file      : build/export.build
 # license   : Unicode License; see accompanying LICENSE file
 
-# @@ export uconv?
-
 $out_root/
 {
   include tools/
-
+  include extra/uconv/
   include data/
 }
 
@@ -16,14 +14,18 @@ e = $extension($import.target)
 # If the target is `file{icudtXXX.dat}`, export the ICU data archive;
 # otherwise export one of the tools.
 #
-if ($regex.match($n, 'icudt.+') && $e == 'dat') # Use $string.begins_with()?
+if ($string.starts_with($n, 'icudt') && $e == 'dat')
   export $out_root/data/$import.target
 else
 {
+  # All tools are in tools/ except uconv which is in extra/.
+  #
+  d = [dir_path] ($import.target == exe{uconv} ? extra/ : tools/)
+
   # tools/genrb/exe{derb} is unique in that it is in another tool's
   # subdirectory.
   #
-  d = ($import.target == exe{derb} ? genrb : $n)
+  d += [dir_path] ($import.target == exe{derb} ? genrb/ : $n/)
 
-  export $out_root/tools/$d/$import.target
+  export $out_root/$d/$import.target
 }

@@ -530,7 +530,8 @@ file{~'/res_index.txt/'}: file{~'/LOCALE_DEPS.json/'}
   # initialise the list of input file names.
   #
   # @@ TMP Note: have to append `/.` to the path otherwise find refuses to
-  #        operate on it if it's a symlink. build2 GH issue #434?
+  #        operate on it if it's a symlink. build2 GH issue #434? Yes can
+  #        confirm: same error message, and it does also happen on Linux.
   #
   find $sd/. -name \*.txt | set -n ifs # Input files
   ifs = $name.sort($name($ifs))

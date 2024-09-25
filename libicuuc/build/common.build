@@ -4,7 +4,7 @@ tcpu   = $cc.target.cpu
 
 macos   = ($tclass == 'macos')
 windows = ($tclass == 'windows')
-mingw   = ($windows && $tsys == 'windows') # @@ migw32?
+mingw   = ($windows && $tsys == 'mingw32')
 
 # Only x86 and ARM supported from Windows 2000 onwards.
 #
