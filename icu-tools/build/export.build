@@ -1,15 +1,6 @@
 # file      : build/export.build
 # license   : Unicode License; see accompanying LICENSE file
 
-# @@ Load only what's needed.
-#
-$out_root/
-{
-  include tools/
-  include extra/uconv/
-  include data/
-}
-
 n = $name($import.target)
 e = $extension($import.target)
 
@@ -17,17 +8,34 @@ e = $extension($import.target)
 # otherwise export one of the tools.
 #
 if ($string.starts_with($n, 'icudt') && $e == 'dat')
+{
+  $out_root/
+  {
+    include data/
+  }
+
   export $out_root/data/$import.target
+}
+elif ($import.target == exe{uconv})
+{
+  $out_root/
+  {
+    include extra/uconv/
+  }
+
+  export $out_root/extra/uconv/$import.target
+}
 else
 {
-  # All tools are in tools/ except uconv which is in extra/.
-  #
-  d = [dir_path] ($import.target == exe{uconv} ? extra/ : tools/)
+  $out_root/
+  {
+    include tools/
+  }
 
   # tools/genrb/exe{derb} is unique in that it is in another tool's
   # subdirectory.
   #
-  d += [dir_path] ($import.target == exe{derb} ? genrb/ : $n/)
+  d = [dir_path] ($import.target == exe{derb} ? genrb/ : $n/)
 
-  export $out_root/$d/$import.target
+  export $out_root/tools/$d/$import.target
 }

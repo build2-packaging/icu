@@ -1,5 +1,5 @@
-@@ Let's move to seperate tests subproject. See cli/tests/
-
+# @@ Let's move to seperate tests subproject. See cli/tests/
+#
 # `icuinfo -v` prints ICU version and configuration information, some of which
 # it retrieves from the ICU default data. If it cannot access the default
 # data its output will contain the following error messages:

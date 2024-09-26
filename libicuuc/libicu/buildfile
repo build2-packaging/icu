@@ -11,7 +11,9 @@ datfile_path = $($genccode: genccode.datfile_path)
 # package is installed, in which case create a local file{} target from the
 # exported path; otherwise import the exported data archive file{} target.
 #
-if $empty($datfile_path) # @@ null?
+# @@ null? Doesn't return true for develop case.
+#
+if $empty($datfile_path)
   import! datfile = icu-tools%file{$(data_name).dat}
 else
   datfile = file{$datfile_path}
@@ -57,8 +59,8 @@ data/S{$(data_name)_dat}: $datfile $genccode
 libs{icudata}: data/objs{$(data_name)_dat.dll.obj}: include = (!$asm)
 liba{icudata}: data/obja{$(data_name)_dat.lib.obj}:  include = (!$asm)
 
-data/objs{$(data_name)_dat.so.obj}: $datfile data/objs{oma} $genccode
-data/obja{$(data_name)_dat.a.obj}:  $datfile data/obja{oma} $genccode
+data/objs{$(data_name)_dat.dll.obj}: $datfile data/objs{oma} $genccode
+data/obja{$(data_name)_dat.lib.obj}: $datfile data/obja{oma} $genccode
 
 # Object file used by genccode to determine the CPU architecture. Name taken
 # from upstream and stands for "OptMatchArch".
@@ -91,7 +93,7 @@ data/S{$(data_name)_dat}: $datfile $genccode
 
 # Generate the object files.
 #
-data/objs{$(data_name)_dat.so.obj}: $datfile data/objs{oma} $genccode
+data/objs{$(data_name)_dat.dll.obj}: $datfile data/objs{oma} $genccode
 {{
   # --object:     Output an object file (instead of assembly code).
   # --match-arch: Match the architecture (CPU, 32/64 bits) of this object
@@ -103,11 +105,11 @@ data/objs{$(data_name)_dat.so.obj}: $datfile data/objs{oma} $genccode
             --entrypoint $data_basename         \
             --object                            \
             --match-arch $path($<[1])           \
-            --filename $(data_name)_dat.so      \
+            --filename $(data_name)_dat.dll     \
             $path($<[0])
 }}
 
-data/obja{$(data_name)_dat.a.obj}: $datfile data/obja{oma} $genccode
+data/obja{$(data_name)_dat.lib.obj}: $datfile data/obja{oma} $genccode
 {{
   # --skip-dll-export: Don't export the ICU data entry point symbol.
   #
@@ -116,7 +118,7 @@ data/obja{$(data_name)_dat.a.obj}: $datfile data/obja{oma} $genccode
             --entrypoint $data_basename         \
             --object                            \
             --match-arch $path($<[1])           \
-            --filename $(data_name)_dat.a       \
+            --filename $(data_name)_dat.lib     \
             --skip-dll-export                   \
             $path($<[0])
 }}
