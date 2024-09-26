@@ -26,7 +26,7 @@ tools = escapesrc       \
 # genrb/{genrb,derb} (see below) and genccode which has a generated source
 # file.
 #
-for t: $regex.filter_out_search($tools, 'genrb|genccode')
+for t: $regex.filter_out_match($tools, 'genrb|genccode')
 {
   ./: $t/exe{$t}: $t/{hxx cxx c}{*} \
                   ../icu-bootstrap/libue{icu-bootstrap}
@@ -83,20 +83,20 @@ for t: $tools
   $t/exe{$t}:
   {
     export.metadata = 1 $t
-    "$t".name = [string] $t
-    "$t".version  = [string] $version
-    "$t".checksum = [string] $version
-    "$t".environment = $env
+    $(t).name = [string] $t
+    $(t).version  = [string] $version
+    $(t).checksum = [string] $version
+    $(t).environment = $env
   }
 }
 
 genrb/exe{derb}:
 {
   export.metadata = 1 derb
-  "derb".name = [string] derb
-  "derb".version  = [string] $version
-  "derb".checksum = [string] $version
-  "derb".environment = $env
+  derb.name = [string] derb
+  derb.version  = [string] $version
+  derb.checksum = [string] $version
+  derb.environment = $env
 }
 
 # The libicuuc package uses the genccode tool to embed the data archive into
@@ -126,7 +126,7 @@ genccode/c{genccode}: genccode/in{genccode}
 {
   genccode = genccode/exe{genccode}
 
-  datfile_path    = '[path] [null]'
+  datfile_path    = '[null]'
   datfile_path_fi = [path] $($genccode: genccode.datfile_path.for_install)
 
   # Escape backslashes on Windows.
@@ -186,6 +186,8 @@ for t: $tools
 
 genrb/obj{derb}: cc.poptions =+ "-I$src_root/icu-bootstrap/io"
 
+# For some unknown reason both Debian and Fedora install these into sbin/.
+#
 exe{escapesrc/escapesrc \
     genccode/genccode   \
     gencmn/gencmn       \

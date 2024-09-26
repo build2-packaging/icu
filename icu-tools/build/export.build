@@ -1,6 +1,8 @@
 # file      : build/export.build
 # license   : Unicode License; see accompanying LICENSE file
 
+# @@ Load only what's needed.
+#
 $out_root/
 {
   include tools/

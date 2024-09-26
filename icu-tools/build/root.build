@@ -35,8 +35,8 @@ res{*}: extension = res
 # directory that contains the ICU data archive.
 #
 data_dir_develop = [dir_path] $out_root/data
-data_dir_install = [dir_path] ($install.root != [null]          \
-                               ? $install.resolve($install.lib) \
+data_dir_install = [dir_path] ($install.root != [null]           \
+                               ? $install.resolve($install.data) \
                                : .)
 
 if ($build.mode != 'skeleton')

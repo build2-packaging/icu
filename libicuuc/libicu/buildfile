@@ -11,12 +11,10 @@ datfile_path = $($genccode: genccode.datfile_path)
 # package is installed, in which case create a local file{} target from the
 # exported path; otherwise import the exported data archive file{} target.
 #
-if $empty($datfile_path)
+if $empty($datfile_path) # @@ null?
   import! datfile = icu-tools%file{$(data_name).dat}
 else
   datfile = file{$datfile_path}
-
-macos = ($tclass == 'macos')
 
 # Note that some of the uc/unicode/*.h files are C++ headers and some are C
 # headers. We will assume all of them as C headers, which is a bit of a hack
@@ -56,8 +54,8 @@ data/S{$(data_name)_dat}: $datfile $genccode
 
 # Dependencies for the object file case (note: Windows only).
 #
-libs{icudata}: data/objs{$(data_name)_dat.so.obj}: include = (!$asm)
-liba{icudata}: data/obja{$(data_name)_dat.a.obj}:  include = (!$asm)
+libs{icudata}: data/objs{$(data_name)_dat.dll.obj}: include = (!$asm)
+liba{icudata}: data/obja{$(data_name)_dat.lib.obj}:  include = (!$asm)
 
 data/objs{$(data_name)_dat.so.obj}: $datfile data/objs{oma} $genccode
 data/obja{$(data_name)_dat.a.obj}:  $datfile data/obja{oma} $genccode
@@ -183,6 +181,9 @@ switch $c.class, $tclass
   case 'msvc'
   {
     # See tools/pkgdata/pkgdata.cpp.
+    #
+    # @@ Strange options? /DLL Also check what was here before.
+    # @@ If some need to be passed for DLL only, the use libs{}?
     #
     lib{icudata}: c.loptions += /NXCOMPAT /DYNAMICBASE /DLL /NOENTRY /MANIFEST:NO
   }
