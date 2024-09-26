@@ -271,6 +271,7 @@ main(int argc, char *argv[]) {
       printf ("icupkg.name = [string] icupkg\n");
       printf ("icupkg.version = [string] '%s'\n", U_ICU_VERSION);
       printf ("icupkg.checksum = [string] '%s'\n", U_ICU_VERSION);
+      printf ("icupkg.environment = [strings] ICU_DATA ICU_DATA_DIR_PREFIX_ENV_VAR ICU_PLUGINS ICU_TIMEZONE_FILES_DIR ICU_TIMEZONE_FILES_DIR_PREFIX_ENV_VAR LANG LC_ALL LC_CTYPE LC_MESSAGES TENTATIVE_ERA_VAR_NAME TZ TZFILE U_FAKETIME_START\n");
       return 0;
     }
 

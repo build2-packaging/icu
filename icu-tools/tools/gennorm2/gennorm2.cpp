@@ -88,6 +88,7 @@ main(int argc, char* argv[]) {
       printf ("gennorm2.name = [string] gennorm2\n");
       printf ("gennorm2.version = [string] '%s'\n", U_ICU_VERSION);
       printf ("gennorm2.checksum = [string] '%s'\n", U_ICU_VERSION);
+      printf ("gennorm2.environment = [strings] ICU_DATA ICU_DATA_DIR_PREFIX_ENV_VAR ICU_PLUGINS ICU_TIMEZONE_FILES_DIR ICU_TIMEZONE_FILES_DIR_PREFIX_ENV_VAR LANG LC_ALL LC_CTYPE LC_MESSAGES TENTATIVE_ERA_VAR_NAME TZ TZFILE U_FAKETIME_START\n");
       return 0;
     }
 
