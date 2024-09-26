@@ -64,6 +64,20 @@ genrb/exe{genrb derb} genccode/exe{genccode}: \
 
 # Export metadata from the tool executables.
 #
+env = [strings] ICU_DATA                                \
+                ICU_DATA_DIR_PREFIX_ENV_VAR             \
+                ICU_PLUGINS                             \
+                ICU_TIMEZONE_FILES_DIR                  \
+                ICU_TIMEZONE_FILES_DIR_PREFIX_ENV_VAR   \
+                LANG                                    \
+                LC_ALL                                  \
+                LC_CTYPE                                \
+                LC_MESSAGES                             \
+                TENTATIVE_ERA_VAR_NAME                  \
+                TZ                                      \
+                TZFILE                                  \
+                U_FAKETIME_START
+
 for t: $tools
 {
   $t/exe{$t}:
@@ -72,6 +86,7 @@ for t: $tools
     "$t".name = [string] $t
     "$t".version  = [string] $version
     "$t".checksum = [string] $version
+    "$t".environment = $env
   }
 }
 
@@ -81,6 +96,7 @@ genrb/exe{derb}:
   "derb".name = [string] derb
   "derb".version  = [string] $version
   "derb".checksum = [string] $version
+  "derb".environment = $env
 }
 
 # The libicuuc package uses the genccode tool to embed the data archive into
