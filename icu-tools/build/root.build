@@ -22,10 +22,6 @@ using in
 
 using c.as-cpp
 
-# The test target for cross-testing (running tests under Wine, etc).
-#
-test.target = $cxx.target
-
 # Resource bundle.
 #
 define res: file

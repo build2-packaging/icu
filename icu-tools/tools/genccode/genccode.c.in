@@ -105,6 +105,8 @@ main(int argc, char* argv[]) {
       printf ("genccode.name = [string] genccode\n");
       printf ("genccode.version = [string] '%s'\n", U_ICU_VERSION);
       printf ("genccode.checksum = [string] '%s'\n", U_ICU_VERSION);
+      printf ("genccode.data_dir = [dir_path] $data_dir$\n");
+      printf ("genccode.data_dir.for_install = [dir_path] $data_dir_fi$\n");
       printf ("genccode.datfile_path = [path] $datfile_path$\n");
       printf ("genccode.datfile_path.for_install = [path] $datfile_path_fi$\n");
       printf ("genccode.environment = [strings] ICU_DATA\n");

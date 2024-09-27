@@ -1,4 +1,8 @@
-# @@ Let's move to seperate tests subproject. See cli/tests/
+# file      : tests/load-icudata/testscript
+# license   : Unicode License; see accompanying LICENSE file
+
+# Test that icudata (and all tools, by extension) is able to load the default
+# ICU data.
 #
 # `icuinfo -v` prints ICU version and configuration information, some of which
 # it retrieves from the ICU default data. If it cannot access the default
@@ -22,9 +26,10 @@
 # the ICU data path happens to contain valid ICU data.
 #
 
-# The data directory. Escape backslashes on Windows.
+# The data directory. Escape backslashes for the Testscript parser (if on
+# Windows).
 #
-dd = [dir_path] $regex.replace($data_dir_develop, '\\', '\\\\')
+dd = [dir_path] $regex.replace($data_dir, '\\', '\\\\')
 
 : load-icudata
 : Test that icuinfo can load the default ICU data.
