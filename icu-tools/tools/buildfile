@@ -64,19 +64,12 @@ genrb/exe{genrb derb} genccode/exe{genccode}: \
 
 # Export metadata from the tool executables.
 #
-env = [strings] ICU_DATA                                \
-                ICU_DATA_DIR_PREFIX_ENV_VAR             \
-                ICU_PLUGINS                             \
-                ICU_TIMEZONE_FILES_DIR                  \
-                ICU_TIMEZONE_FILES_DIR_PREFIX_ENV_VAR   \
-                LANG                                    \
-                LC_ALL                                  \
-                LC_CTYPE                                \
-                LC_MESSAGES                             \
-                TENTATIVE_ERA_VAR_NAME                  \
-                TZ                                      \
-                TZFILE                                  \
-                U_FAKETIME_START
+
+# Environment variables likely to affect tool output.
+#
+#   ICU_DATA: ICU data directory (location of the default ICU data).
+#
+env = [strings] ICU_DATA
 
 for t: $tools
 {
