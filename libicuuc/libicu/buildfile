@@ -182,12 +182,21 @@ switch $c.class, $tclass
     lib{icudata}: c.loptions += -nodefaultlibs -nostdlib
   case 'msvc'
   {
-    # See tools/pkgdata/pkgdata.cpp.
+    # Link options taken from tools/pkgdata/pkgdata.cpp.
     #
-    # @@ Strange options? /DLL Also check what was here before.
+    # /NOENTRY: Required for creating a resource-only DLL that contains no
+    #           executable code. Use this option to prevent LINK from linking
+    #           a reference to _main into the DLL.
+    #
+    # /MANIFEST:NO: Do not create a side-by-side manifest file.
+    #
+    # @@ Strange options? Also check what was here before.
     # @@ If some need to be passed for DLL only, the use libs{}?
     #
-    lib{icudata}: c.loptions += /NXCOMPAT /DYNAMICBASE /DLL /NOENTRY /MANIFEST:NO
+    #    @@ TMP Previously no link options were set.
+    #
+    lib{icudata}:  c.loptions += /NOENTRY
+    libs{icudata}: c.loptions += /MANIFEST:NO
   }
 }
 
