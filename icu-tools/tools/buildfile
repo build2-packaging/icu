@@ -124,10 +124,13 @@ genccode/c{genccode}: genccode/in{genccode}
 {
   genccode = genccode/exe{genccode}
 
-  data_dir    = [dir_path] $($genccode: genccode.data_dir)
+  # If metadata is being read from the executable then icu-tools is installed
+  # so export the installed path in both cases.
+  #
+  data_dir    = [dir_path] $($genccode: genccode.data_dir.for_install)
   data_dir_fi = [dir_path] $($genccode: genccode.data_dir.for_install)
 
-  datfile_path    = '[null]'
+  datfile_path    = [path] $($genccode: genccode.datfile_path.for_install)
   datfile_path_fi = [path] $($genccode: genccode.datfile_path.for_install)
 
   # Escape backslashes on Windows.
