@@ -185,7 +185,6 @@ genrb/obj{derb}: cc.poptions =+ "-I$src_root/icu-bootstrap/io"
 # For some unknown reason both Debian and Fedora install these into sbin/.
 #
 exe{escapesrc/escapesrc \
-    genccode/genccode   \
     gencmn/gencmn       \
     gennorm2/gennorm2   \
     gensprep/gensprep   \
