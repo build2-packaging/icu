@@ -135,9 +135,18 @@ genccode/c{genccode}: genccode/in{genccode}
 
   # Escape backslashes on Windows.
   #
-  data_dir        = [dir_path] $regex.replace($data_dir, '\\', '\\\\')
-  data_dir_fi     = [dir_path] $regex.replace($data_dir_fi, '\\', '\\\\')
-  datfile_path_fi = [path]     $regex.replace($datfile_path_fi, '\\', '\\\\')
+  # We need lots of backslashes because there are three parses: of this
+  # buildfile, of the C source file, and of the consuming buildfile. The
+  # transformations are as follows:
+  #
+  # regex.replace():     foo\bar    -> foo\\\\bar
+  # C string literal:    foo\\\\bar -> foo\\bar
+  # Consuming buildfile: foo\\bar   -> foo\bar
+  #
+  data_dir        = [dir_path] $regex.replace($data_dir, '\\', '\\\\\\\\')
+  data_dir_fi     = [dir_path] $regex.replace($data_dir_fi, '\\', '\\\\\\\\')
+  datfile_path    = [path]     $regex.replace($datfile_path, '\\', '\\\\\\\\')
+  datfile_path_fi = [path]     $regex.replace($datfile_path_fi, '\\', '\\\\\\\\')
 }
 
 # Arrange for the data archive to be updated after any tool executable is
