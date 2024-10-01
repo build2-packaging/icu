@@ -108,14 +108,14 @@ genccode/exe{genccode}:
   # Path to the ICU data directory.
   #
   genccode.data_dir             = $data_dir_develop
-  genccode.data_dir.for_install = $data_dir_install
+  ##genccode.data_dir.for_install = $data_dir_install
 
   # Path to the ICU data archive. Make it null in the develop case to signal
   # to consumers that they can import the target (i.e., as opposed to creating
   # their own local file{} target).
   #
-  genccode.datfile_path             = [path] [null]
-  genccode.datfile_path.for_install = [path] $data_dir_install/$(data_name).dat
+  genccode.datfile_path             = [path, null] # @@ any other places?
+  ##genccode.datfile_path.for_install = [path] $data_dir_install/$(data_name).dat
 }
 
 # Export the same metadata as above from the main function.
@@ -127,11 +127,11 @@ genccode/c{genccode}: genccode/in{genccode}
   # If metadata is being read from the executable then icu-tools is installed
   # so export the installed path in both cases.
   #
-  data_dir    = [dir_path] $($genccode: genccode.data_dir.for_install)
-  data_dir_fi = [dir_path] $($genccode: genccode.data_dir.for_install)
+  data_dir    = [dir_path] $($genccode: genccode.data_dir.for_install) # @@
+  ##data_dir_fi = [dir_path] $($genccode: genccode.data_dir.for_install)
 
   datfile_path    = [path] $($genccode: genccode.datfile_path.for_install)
-  datfile_path_fi = [path] $($genccode: genccode.datfile_path.for_install)
+  ##datfile_path_fi = [path] $($genccode: genccode.datfile_path.for_install)
 
   # Escape backslashes on Windows.
   #
@@ -143,10 +143,12 @@ genccode/c{genccode}: genccode/in{genccode}
   # C string literal:    foo\\\\bar -> foo\\bar
   # Consuming buildfile: foo\\bar   -> foo\bar
   #
+  data_dir        = [dir_path] "'$regex.replace($data_dir, '\\', '\\\\')'"
+
   data_dir        = [dir_path] $regex.replace($data_dir, '\\', '\\\\\\\\')
-  data_dir_fi     = [dir_path] $regex.replace($data_dir_fi, '\\', '\\\\\\\\')
+  ##data_dir_fi     = [dir_path] $regex.replace($data_dir_fi, '\\', '\\\\\\\\')
   datfile_path    = [path]     $regex.replace($datfile_path, '\\', '\\\\\\\\')
-  datfile_path_fi = [path]     $regex.replace($datfile_path_fi, '\\', '\\\\\\\\')
+  ##datfile_path_fi = [path]     $regex.replace($datfile_path_fi, '\\', '\\\\\\\\')
 }
 
 # Arrange for the data archive to be updated after any tool executable is
