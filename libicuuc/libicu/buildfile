@@ -11,9 +11,7 @@ datfile_path = $($genccode: genccode.datfile_path)
 # package is installed, in which case create a local file{} target from the
 # exported path; otherwise import the exported data archive file{} target.
 #
-# @@ null? Doesn't return true for develop case.
-#
-if $empty($datfile_path)
+if $null($datfile_path)
   import! datfile = icu-tools%file{$(data_name).dat}
 else
   datfile = file{$datfile_path}
@@ -179,7 +177,7 @@ lib{icuuc}:
 switch $c.class, $tclass
 {
   case 'gcc', 'linux'
-    lib{icudata}: c.loptions += -nodefaultlibs -nostdlib
+    libs{icudata}: c.loptions += -nodefaultlibs -nostdlib
   case 'msvc'
   {
     # Link options taken from tools/pkgdata/pkgdata.cpp.
@@ -190,13 +188,7 @@ switch $c.class, $tclass
     #
     # /MANIFEST:NO: Do not create a side-by-side manifest file.
     #
-    # @@ Strange options? Also check what was here before.
-    # @@ If some need to be passed for DLL only, the use libs{}?
-    #
-    #    @@ TMP Previously no link options were set.
-    #
-    lib{icudata}:  c.loptions += /NOENTRY
-    libs{icudata}: c.loptions += /MANIFEST:NO
+    libs{icudata}:  c.loptions += /NOENTRY /MANIFEST:NO
   }
 }
 
