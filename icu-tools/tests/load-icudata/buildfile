@@ -1,0 +1,17 @@
+# file      : tests/load-icudata/buildfile
+# license   : Unicode License; see accompanying LICENSE file
+
+import! [metadata] icuinfo = icu-tools%exe{icuinfo}
+
+# Import genccode only for the ICU data directory path.
+#
+import! [metadata] genccode = icu-tools%exe{genccode}
+
+./: testscript $icuinfo $genccode
+
+testscript{*}:
+{
+  test = $icuinfo
+
+  data_dir = $($genccode: genccode.data_dir)
+}

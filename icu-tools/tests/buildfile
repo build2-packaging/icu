@@ -1,0 +1,4 @@
+# file      : tests/buildfile
+# license   : Unicode License; see accompanying LICENSE file
+
+./: {*/ -build/}

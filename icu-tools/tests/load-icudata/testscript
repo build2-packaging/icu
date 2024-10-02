@@ -1,0 +1,43 @@
+# file      : tests/load-icudata/testscript
+# license   : Unicode License; see accompanying LICENSE file
+
+# Test that icudata (and all tools, by extension) is able to load the default
+# ICU data.
+#
+# `icuinfo -v` prints ICU version and configuration information, some of which
+# it retrieves from the ICU default data. If it cannot access the default
+# data its output will contain the following error messages:
+#
+#   ...
+#   <!-- n="cldr.version" ERROR: U_MISSING_RESOURCE_ERROR -->
+#   <!-- n="tz.version" ERROR: U_MISSING_RESOURCE_ERROR -->
+#   ...
+#   ICU Initialization returned: U_FILE_ACCESS_ERROR
+#
+# This test's output regex matches the following kinds of output:
+#   ...
+#     <param name="cldr.version">44.1</param>
+#     <param name="tz.version">2023c</param>
+#   ...
+#   ICU Initialization returned: U_ZERO_ERROR
+#
+# Also verify that the reported ICU data directory path matches what we have
+# in our buildfiles. This would catch the case where an incorrect value for
+# the ICU data path happens to contain valid ICU data.
+#
+
+# The data directory. Escape backslashes if on Windows (for the regex parser).
+#
+dd = [dir_path] $regex.replace($data_dir, '\\', '\\\\')
+
+: load-icudata
+: Test that icuinfo can load the default ICU data.
+:
+$* -v 2>- >>~"%EOO%"
+%.+
+%^\\s*<param name="icudata.path">$dd</param>%
+%^\\s*<param name="cldr.version">[0-9]+\.[0-9]+</param>%
+%^\\s*<param name="tz.version">[0-9]{4}[a-z]+</param>%
+%.+
+ICU Initialization returned: U_ZERO_ERROR
+EOO
