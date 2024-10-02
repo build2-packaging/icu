@@ -18,6 +18,22 @@ using c
 h{*}: extension = h
 c{*}: extension = c
 
-# The test target for cross-testing (running tests under Wine, etc).
+using in
+
+using c.as-cpp
+
+# Resource bundle.
 #
-test.target = $cxx.target
+define res: file
+res{*}: extension = res
+
+# The ICU data directory path for the installed and develop cases. This is the
+# directory that contains the ICU data archive.
+#
+data_dir_develop = [dir_path] $out_root/data
+data_dir_install = [dir_path] ($install.root != [null]           \
+                               ? $install.resolve($install.data) \
+                               : .)
+
+if ($build.mode != 'skeleton')
+  source build/common.build

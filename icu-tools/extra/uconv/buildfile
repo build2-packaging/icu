@@ -1,0 +1,169 @@
+# file      : extra/uconv/buildfile
+# license   : Unicode License; see accompanying LICENSE file
+
+import! [metadata] genrb = exe{genrb}
+import! [metadata] pkgdata = exe{pkgdata}
+import! [metadata] genccode = exe{genccode}
+
+include ../../icu-bootstrap/
+
+data_name = uconvmsg
+
+./exe{uconv}: cxx{*} c{*} unicode/h{*}    \
+              libue{$data_name}           \
+              ../../icu-bootstrap/libue{icu-bootstrap}
+{
+  export.metadata = 1 uconv
+  uconv.name = [string] uconv
+  uconv.version  = [string] $version
+  uconv.checksum = [string] $version
+}
+
+# Dependencies on the installed- and development-specific bootstrap libraries.
+#
+exe{uconv}: ../../icu-bootstrap/libue{icu-bootstrap-install}: for_install = true
+exe{uconv}: ../../icu-bootstrap/libue{icu-bootstrap-develop}: for_install = false
+
+# The uconv data library. Contains translations of the application options and
+# messages (hence the data name `uconvmsg`).
+#
+# Use pkgdata to create the data archive (.dat) from the resource bundles and
+# genccode to transform the data archive into a library-embeddable form
+# (assembly or an object file, depending on platform). See
+# libicuuc/libicu/buildfile for more details.
+#
+[rule_hint=c] libue{$data_name}:
+
+# If true, generate assembly from the data archive; otherwise generate the
+# object file directly.
+#
+asm = (!$windows || $mingw)
+
+# Dependencies for the assembly case.
+#
+libue{$data_name}: $data_name/S{$(data_name)_dat}: include = $asm
+
+$data_name/S{$(data_name)_dat}: $data_name/file{$(data_name).dat} $genccode
+
+# Dependencies for the object file case (note: Windows only).
+#
+# Use the `_c` suffix to differentiate this object file from the one generated
+# from the assembly source file.
+#
+libue{$data_name}: $data_name/obje{$(data_name)_dat_c.obj}: include = (!$asm)
+
+$data_name/obje{$(data_name)_dat_c.obj}: $data_name/file{$(data_name).dat}   \
+                                         obje{$data_name/oma}                \
+                                         $genccode
+
+# Object file used by genccode to determine the CPU architecture. Name taken
+# from upstream and stands for "OptMatchArch".
+#
+$data_name/obje{oma}: $data_name/c{oma}
+
+# Dependencies for the data archive and resource bundles.
+#
+$data_name/file{$(data_name).dat}: $data_name/file{$(data_name).lst}    \
+                                   $data_name/res{fr root}              \
+                                   $pkgdata
+
+$data_name/res{fr}:   resources/file{fr.txt}   $genrb
+$data_name/res{root}: resources/file{root.txt} $genrb
+
+$data_name/file{$(data_name).lst}:
+{{
+  diag gen $>
+
+  echo "\
+root.res
+fr.res" > $path($>[0])
+}}
+
+# Generate a resource bundle (foo.txt -> foo.res).
+#
+res{~'/(.*)/'}: file{~'/\1.txt/'} $genrb
+{{
+  $genrb --sourcedir  $directory($path($<[0]))  \
+         --destdir    $directory($path($>[0]))  \
+         --icudatadir $out_base/$data_name      \
+         $name($<[0]).$extension($<[0])
+}}
+
+# Generate the uconv data archive.
+#
+$data_name/file{$(data_name).dat}: $data_name/file{$(data_name).lst}    \
+                                   $data_name/res{fr root}              \
+                                   $pkgdata
+{{
+  # --mode common: Produce the data archive (.dat) only.
+  #
+  $pkgdata --mode common                        \
+           --quiet                              \
+           --name $data_name                    \
+           --sourcedir $out_base/$data_name     \
+           --destdir $out_base/$data_name       \
+           --tempdir $out_base/$data_name       \
+           $path($<[0])
+}}
+
+# Generate the assembly source file using genccode.
+#
+switch $tclass, $tsys
+{
+  case 'linux' | 'bsd'
+    asm_type = 'gcc'
+  case 'macos'
+    asm_type = 'gcc-darwin'
+  case 'windows', 'mingw32'
+    asm_type = 'gcc-mingw64'
+}
+
+$data_name/S{$(data_name)_dat}: $data_name/file{$(data_name).dat} $genccode
+{{
+  # --entrypoint: Library entry point name; will be suffixed with _dat.
+  # --assembly:   Output assembly code.
+  #
+  $genccode --quiet                             \
+            --destdir $directory($path($>[0]))  \
+            --entrypoint $data_name             \
+            --assembly $asm_type                \
+            $path($<[0])
+}}
+
+# Generate the object file.
+#
+$data_name/obje{$(data_name)_dat_c.obj}: $data_name/file{$(data_name).dat}    \
+                                         $data_name/obje{oma} $genccode
+{{
+  # --skip-dll-export: Don't export the ICU data entry point symbol (Windows only).
+  # --object:          Output an object file (instead of assembly code).
+  # --match-arch:      Match the architecture (CPU, 32/64 bits) of this object
+  #                    file.
+  # --filename:        Output file basename (.obj extension will be appended).
+  #
+  $genccode --quiet                             \
+            --destdir $directory($path($>[0]))  \
+            --entrypoint $data_name             \
+            --skip-dll-export                   \
+            --object                            \
+            --match-arch $path($<[1])           \
+            --filename $(data_name)_dat_c       \
+            $path($<[0])
+}}
+
+cc.poptions =+ "-I$src_root/icu-bootstrap/uc" \
+               "-I$src_root/icu-bootstrap/i18n"
+
+c.coptions += $common_cc_coptions
+cxx.coptions += $common_cc_coptions $common_cxx_coptions
+
+# Note that UCONVMSG_LINK's value is actually ignored but do it like the
+# non-Windows upstream build (uconv/Makefile.in) here in case they change
+# their minds at some point.
+#
+cc.poptions += -DUCONVMSG_LINK=$data_name               \
+               -DU_STATIC_IMPLEMENTATION                \
+               -DUNISTR_FROM_CHAR_EXPLICIT=explicit     \
+               -DUNISTR_FROM_STRING_EXPLICIT=explicit
+
+cxx.libs += $common_cxx_libs

@@ -1,1 +1,12 @@
-./: {*/ -build/} doc{README} manifest
+# Note: Put extra/ last to ensure that it is updated after tools/ otherwise,
+# during installation, some of its dependencies from tools/ will be updated
+# for update instead of for install.
+#
+./: {*/ -build/ -extra/} doc{INSTALL README} legal{LICENSE} manifest
+
+./: extra/
+
+# Don't install tests or the INSTALL file.
+#
+tests/:          install = false
+doc{INSTALL}@./: install = false

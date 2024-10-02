@@ -1,0 +1,41 @@
+# file      : build/export.build
+# license   : Unicode License; see accompanying LICENSE file
+
+n = $name($import.target)
+e = $extension($import.target)
+
+# If the target is `file{icudtXXX.dat}`, export the ICU data archive;
+# otherwise export one of the tools.
+#
+if ($string.starts_with($n, 'icudt') && $e == 'dat')
+{
+  $out_root/
+  {
+    include data/
+  }
+
+  export $out_root/data/$import.target
+}
+elif ($import.target == exe{uconv})
+{
+  $out_root/
+  {
+    include extra/uconv/
+  }
+
+  export $out_root/extra/uconv/$import.target
+}
+else
+{
+  $out_root/
+  {
+    include tools/
+  }
+
+  # tools/genrb/exe{derb} is unique in that it is in another tool's
+  # subdirectory.
+  #
+  d = [dir_path] ($import.target == exe{derb} ? genrb/ : $n/)
+
+  export $out_root/tools/$d/$import.target
+}

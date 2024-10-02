@@ -1,5 +1,18 @@
-genrb
+escapesrc/escapesrc
+genbrk/genbrk
+genccode/genccode
+gencfu/gencfu
+gencmn/gencmn
+gencnval/gencnval
+gendict/gendict
+gennorm2/gennorm2
+genrb/derb
+genrb/genrb
+gensprep/gensprep
+icuexportdata/icuexportdata
+icuinfo/icuinfo
+icupkg/icupkg
+makeconv/makeconv
+pkgdata/pkgdata
 
-# Testscript output directory (can be symlink).
-#
-test-icu-tools
+icuinfo/test-icuinfo
