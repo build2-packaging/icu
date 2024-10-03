@@ -1,6 +1,6 @@
 : 1
 name: icu-tools
-version: 74.2.0
+version: 74.2.0+1
 upstream-version: 74.2
 language: c++
 language: c

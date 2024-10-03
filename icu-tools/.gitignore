@@ -1,3 +1,26 @@
+# ICU data files.
+#
+# Note: Directory-qualify patterns for extensions also used on source files.
+#
+*.brk
+*.cfu
+*.cnv
+*.dict
+*.res
+*.spp
+data/*.icu
+data/*.nrm
+res_index.txt
+*.lst
+*.dat
+*.S
+data/filters/
+data/build-time-data-dir/
+
+# Generated source files.
+#
+tools/genccode/genccode.c
+
 # Compiler/linker output.
 #
 *.d

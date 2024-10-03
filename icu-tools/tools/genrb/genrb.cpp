@@ -550,7 +550,7 @@ main(int argc,
                 "is about 300kB larger than the ucadata-implicithan.icu version.");
     }
 
-    if((argc-1)!=1) {
+    if((argc-1)!=1 && isVerbose()) {
         printf("genrb number of files: %d\n", argc - 1);
     }
     /* generate the binary files */

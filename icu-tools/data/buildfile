@@ -142,7 +142,8 @@ file{cnvalias.icu}: mappings/file{convrtrs.txt} $gencnval
 }}
 
 # Add cnvalias.icu to icudata.lst's list of targets (which will be further
-# updated like this throughout the rest of the file).
+# updated like this throughout the rest of the file). Note: See also
+# `file{icudata.lst}: res_index_targets` below.
 #
 file{icudata.lst}: targets += file{cnvalias.icu}
 
@@ -177,12 +178,15 @@ for d: $res_index_dirs
   $t: $s $genrb
   $s: $sd/file{LOCALE_DEPS.json}
 
-  file{icudata.lst}: targets += $t
+  # Keep the res_index targets separate from `file{icudata.lst}: targets`
+  # because they are handled differently in the icudata.lst ad hoc recipe.
+  #
+  file{icudata.lst}: res_index_targets += $t
 }
 
 # Dependencies for the res{*} targets in rbnf/.
 #
-for s: rbnf/file{*.txt}
+for s: rbnf/file{*.txt -res_index.txt} # Exclude res_index if in-source build.
 {
   t = rbnf/res{$name($s)}
   $t: $s $genrb
@@ -217,7 +221,7 @@ fsdir{filters/coll_tree/}: fsdir{filters/}
 
 # Dependencies for the res{*} targets in coll/.
 #
-for s: coll/file{*.txt}
+for s: coll/file{*.txt -res_index.txt} # Exclude res_index if in-source build.
 {
   t = coll/res{$name($s)}
 
@@ -283,6 +287,7 @@ for d: curr     \
   elif ($sd == zone)
     excl = tzdbNames.txt
 
+  excl += res_index.txt # Exclude if in-source build.
   for s: $sd/file{*.txt -{$excl}}
   {
     t = $od/res{$name($s)}
@@ -377,7 +382,7 @@ file{icudata.lst}: targets += $brkitr_brk_trgs
 
 # Dependencies for the res{*} targets in brkitr/.
 #
-for s: brkitr/file{*.txt}
+for s: brkitr/file{*.txt -res_index.txt} # Exclude res_index if in-source build.
 {
   t = brkitr/res{$name($s)}
 
@@ -461,10 +466,13 @@ spp{~'/(.+)/'}: file{~'/\1.txt/'}                               \
 # generated. Although this would usually be expressed by making the data
 # targets prerequisites of icudata.lst, that would cause the latter to be
 # updated whenever the contents of any data target changed which is not the
-# correct semantics. (Note that a modification of the `targets` variable will
-# automatically render the icudata.lst target out of date.)
+# correct semantics. (Note that a modification of the `targets` or
+# `res_index_targets` variables will automatically render the icudata.lst
+# target out of date.)
 #
-file{$(data_name).dat}: $(file{icudata.lst}: targets) file{icudata.lst}
+file{$(data_name).dat}: $(file{icudata.lst}: targets)           \
+                        $(file{icudata.lst}: res_index_targets) \
+                        file{icudata.lst}
 
 # Generate a list of all target paths, relative to `./`. Sort alphabetically
 # but res_index.res has to be at the top of every directory. E.g.:
@@ -537,6 +545,10 @@ file{~'/res_index.txt/'}: file{~'/LOCALE_DEPS.json/'}
   #
   find $sd/. -name \*.txt | set -n ifs # Input files
   ifs = $name.sort($name($ifs))
+
+  # Remove the target itself in case of an in-source build.
+  #
+  ifs = $regex.filter_out_match($ifs, '^res_index$')
 
   # Remove the "supplemental" resource bundles (handled separately) from the
   # list of input files. Note that they also need to be excluded from the pool

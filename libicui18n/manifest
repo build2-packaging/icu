@@ -1,6 +1,6 @@
 : 1
 name: libicui18n
-version: 74.2.0
+version: 74.2.0+1
 upstream-version: 74.2
 project: icu
 summary: ICU high-level internationalization C/C++ library

@@ -26,9 +26,11 @@
 # the ICU data path happens to contain valid ICU data.
 #
 
-# The data directory. Escape backslashes if on Windows (for the regex parser).
+# The data directory. Escape characters considered special in regular
+# expressions (e.g., backslashes in Windows paths or '+' in the package
+# version portion of a package build directory name).
 #
-dd = [dir_path] $regex.replace($data_dir, '\\', '\\\\')
+dd = [dir_path] $regex.replace($data_dir, '([\\.()|*+?{}])', '\\\1')
 
 : load-icudata
 : Test that icuinfo can load the default ICU data.

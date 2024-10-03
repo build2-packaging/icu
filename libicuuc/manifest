@@ -1,6 +1,6 @@
 : 1
 name: libicuuc
-version: 74.2.0
+version: 74.2.0+1
 upstream-version: 74.2
 language: c++
 project: icu
