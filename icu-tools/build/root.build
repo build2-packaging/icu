@@ -27,6 +27,16 @@ using c.as-cpp
 define res: file
 res{*}: extension = res
 
+# @@ TODO Update once endianness detection has been added to build2.
+#
+icu_data_char = 'l' # l for little-endian, b for big-endian.
+
+# These variables correspond to the upstream ICUDATA_BASENAME_VERSION and
+# ICUDATA_PLATFORM_NAME respectively.
+#
+data_basename = "icudt$(version.major)"        # icudt74
+data_name     = "$data_basename$icu_data_char" # icudt74l
+
 # The ICU data directory path for the installed and develop cases. This is the
 # directory that contains the ICU data archive.
 #

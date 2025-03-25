@@ -11,10 +11,19 @@ datfile_path = $($genccode: genccode.datfile_path)
 # package is installed, in which case create a local file{} target from the
 # exported path; otherwise import the exported data archive file{} target.
 #
+# Note that although we import `icudt.dat` the target returned by the
+# icu-tools export stub will have a slightly different name (decorated with
+# some additional information).
+#
 if $null($datfile_path)
-  import! datfile = icu-tools%file{$(data_name).dat}
+  import! datfile = icu-tools%file{icudt.dat}
 else
   datfile = file{$datfile_path}
+
+# The filename of the ICU data archive. (Note that it should have the same
+# value as the data_name variable in icu-tools/build/root.build.)
+#
+data_name = $name($datfile)
 
 # Note that some of the uc/unicode/*.h files are C++ headers and some are C
 # headers. We will assume all of them as C headers, which is a bit of a hack
@@ -77,6 +86,11 @@ switch $tclass, $tsys
     asm_type = 'gcc-mingw64'
 }
 
+# Name of the ICU data library's entrypoint (the data archive filename with
+# the last character, which indicates endianess, removed).
+#
+data_entrypoint = $regex.replace($data_name, '(.+).$', '\1')
+
 data/S{$(data_name)_dat}: $datfile $genccode
 {{
   # --entrypoint: Library entry point name; will be suffixed with _dat.
@@ -84,7 +98,7 @@ data/S{$(data_name)_dat}: $datfile $genccode
   #
   $genccode --quiet                             \
             --destdir $directory($path($>[0]))  \
-            --entrypoint $data_basename         \
+            --entrypoint $data_entrypoint       \
             --assembly $asm_type                \
             $path($<[0])
 }}
@@ -100,7 +114,7 @@ data/objs{$(data_name)_dat.dll.obj}: $datfile data/objs{oma} $genccode
   #
   $genccode --quiet                             \
             --destdir $directory($path($>[0]))  \
-            --entrypoint $data_basename         \
+            --entrypoint $data_entrypoint       \
             --object                            \
             --match-arch $path($<[1])           \
             --filename $(data_name)_dat.dll     \
@@ -113,7 +127,7 @@ data/obja{$(data_name)_dat.lib.obj}: $datfile data/obja{oma} $genccode
   #
   $genccode --quiet                             \
             --destdir $directory($path($>[0]))  \
-            --entrypoint $data_basename         \
+            --entrypoint $data_entrypoint       \
             --object                            \
             --match-arch $path($<[1])           \
             --filename $(data_name)_dat.lib     \

@@ -4,17 +4,21 @@
 n = $name($import.target)
 e = $extension($import.target)
 
-# If the target is `file{icudtXXX.dat}`, export the ICU data archive;
-# otherwise export one of the tools.
+# If the target is `file{icudt.dat}`, export the ICU data archive; otherwise
+# export one of the tools.
 #
-if ($string.starts_with($n, 'icudt') && $e == 'dat')
+if ($n == 'icudt' && $e == 'dat')
 {
   $out_root/
   {
     include data/
   }
 
-  export $out_root/data/$import.target
+  # Note that the exported target is the imported target decorated with some
+  # additional information (see the data_name variable in root.build for
+  # details).
+  #
+  export $out_root/data/file{$($out_root/ data_name).dat}
 }
 elif ($import.target == exe{uconv})
 {
