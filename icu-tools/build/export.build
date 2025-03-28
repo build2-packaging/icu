@@ -4,21 +4,28 @@
 n = $name($import.target)
 e = $extension($import.target)
 
-# If the target is `file{icudt.dat}`, export the ICU data archive; otherwise
+# If the target is `file{icudt?.dat}`, export the ICU data archive; otherwise
 # export one of the tools.
 #
-if ($n == 'icudt' && $e == 'dat')
+if ($string.starts_with($n, 'icudt') && $e == 'dat')
 {
   $out_root/
   {
     include data/
   }
 
-  # Note that the exported target is the imported target decorated with some
-  # additional information (see the data_name variable in root.build for
-  # details).
+  # The imported target should be either file{icudtl.dat} for little-endian or
+  # file{icudtb.dat} for big-endian.
+
+  # Data basename. E.g. `icu74dt`.
   #
-  export $out_root/data/file{$($out_root/ data_name).dat}
+  db = $($out_root/ data_basename)
+
+  # Imported endianness (the endianness character on the imported target).
+  #
+  ie = $regex.replace($n, '.+(.)$', '\1')
+
+  export $out_root/data/file{$(db)$(ie).dat} # file{icudt74l} | file{icudt74b}
 }
 elif ($import.target == exe{uconv})
 {

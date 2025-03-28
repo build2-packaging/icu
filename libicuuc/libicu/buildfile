@@ -3,20 +3,24 @@
 
 import! [metadata] genccode = icu-tools%exe{genccode}
 
+# @@ TODO Update once endianness detection has been added to build2.
+#
+icu_data_char = 'l' # l for little-endian, b for big-endian.
+
 # The path to the ICU data archive.
 #
-datfile_path = $($genccode: genccode.datfile_path)
+datfile_path = $($genccode: genccode.datfile_$(icu_data_char)_path)
 
 # If genccode defines a path for the ICU data archive then the icu-tools
 # package is installed, in which case create a local file{} target from the
 # exported path; otherwise import the exported data archive file{} target.
 #
-# Note that although we import `icudt.dat` the target returned by the
-# icu-tools export stub will have a slightly different name (decorated with
-# some additional information).
+# Note that although we import `icudt<icu-data-char>.dat` the target returned
+# by the icu-tools export stub will have a slightly different name (currently
+# with the ICU major version number added).
 #
 if $null($datfile_path)
-  import! datfile = icu-tools%file{icudt.dat}
+  import! datfile = icu-tools%file{icudt$(icu_data_char).dat}
 else
   datfile = file{$datfile_path}
 

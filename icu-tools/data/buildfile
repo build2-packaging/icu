@@ -43,6 +43,10 @@ import! [metadata] pkgdata = exe{pkgdata}
 # without it the tools will read <ICU_DATA_DIR>/icudtXXX/foo.bar before
 # searching for foo.bar in <ICU_DATA_DIR>/icudtXXX.dat.
 #
+# We also support the creation of a data archive for the non-native
+# (alternative) endianness. This version would be required if libicuuc (which
+# builds the ICU data library from the data archive) is being built for a
+# target with a different endianness than that of the host.
 
 # The path to the build-time data directory.
 #
@@ -53,7 +57,7 @@ btdd = [dir_path] build-time-data-dir
 # Note: The data file targets and file{icudata.lst} are added as prerequisites
 # below, just before the ad hoc recipe that generates file{icudata.lst}.
 #
-file{$(data_name).dat}: fsdir{$btdd/$data_name} $pkgdata
+./: file{$(data_name).dat}: fsdir{$btdd/$data_name} $pkgdata
 {{
   # --mode common: Produce the data archive (.dat) only.
   #
@@ -64,6 +68,21 @@ file{$(data_name).dat}: fsdir{$btdd/$data_name} $pkgdata
            --destdir   $out_base        \
            --tempdir   $out_base        \
            $path(file{icudata.lst})
+}}
+
+# Alternative versions of the `icu_data_char` and `data_name` variables for
+# the non-native endianness.
+#
+alt_icu_data_char = ($icu_data_char == 'l' ? 'b' : 'l')
+alt_data_name = "$data_basename$alt_icu_data_char" # icudt74b | icudt74l
+
+# The alternative ICU data archive with the non-native endianness.
+#
+# Convert the native endianness archive instead of rebuilding.
+#
+./: file{$(alt_data_name).dat}: file{$(data_name).dat} $icupkg
+{{
+  $icupkg --type $alt_icu_data_char $path($<[0]) $path($>[0])
 }}
 
 # Create the build-time ICU data directory path (see above).
@@ -711,6 +730,6 @@ brk{~'/(.+)/'}: file{~'/\1.txt/'} $genbrk
           -o $path($>[0])
 }}
 
-# Install the data archive for the tools to find.
+# Install the data archives for the tools to find.
 #
-file{$(data_name).dat}: install = data/
+file{$(data_name).dat $(alt_data_name).dat}: install = data/

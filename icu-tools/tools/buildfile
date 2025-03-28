@@ -109,11 +109,12 @@ genccode/exe{genccode}:
   #
   genccode.data_dir = $data_dir_develop
 
-  # Path to the ICU data archive. Make it null in the develop case to signal
-  # to consumers that they can import the target (i.e., as opposed to creating
-  # their own local file{} target).
+  # Paths to the ICU data archives. Make them null in the develop case to
+  # signal to consumers that they can import the target (i.e., as opposed to
+  # creating their own local file{} target).
   #
-  genccode.datfile_path = [path, null]
+  genccode.datfile_l_path = [path, null] # Little-endian.
+  genccode.datfile_b_path = [path, null] # Big-endian.
 }
 
 # Export the same metadata as above from the main function.
@@ -122,14 +123,16 @@ genccode/c{genccode}: genccode/in{genccode}
 {
   data_dir = $data_dir_install
 
-  datfile_path = [path] $data_dir_install/$(data_name).dat
+  datfile_l_path = [path] $data_dir_install/$(data_basename)l.dat
+  datfile_b_path = [path] $data_dir_install/$(data_basename)b.dat
 
   # Escape backslashes on Windows (C string literals). Wrap the printed
   # Buildfile values in single quotes to obviate the need to escape yet
   # another time.
   #
-  data_dir     = [dir_path] "'$regex.replace($data_dir, '\\', '\\\\')'"
-  datfile_path = [path]     "'$regex.replace($datfile_path, '\\', '\\\\')'"
+  data_dir       = [dir_path] "'$regex.replace($data_dir, '\\', '\\\\')'"
+  datfile_l_path = [path]     "'$regex.replace($datfile_l_path, '\\', '\\\\')'"
+  datfile_b_path = [path]     "'$regex.replace($datfile_b_path, '\\', '\\\\')'"
 }
 
 # Arrange for the data archive to be updated after any tool executable is

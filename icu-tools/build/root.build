@@ -35,7 +35,7 @@ icu_data_char = 'l' # l for little-endian, b for big-endian.
 # ICUDATA_PLATFORM_NAME respectively.
 #
 data_basename = "icudt$(version.major)"        # icudt74
-data_name     = "$data_basename$icu_data_char" # icudt74l
+data_name     = "$data_basename$icu_data_char" # icudt74l | icudt74b
 
 # The ICU data directory path for the installed and develop cases. This is the
 # directory that contains the ICU data archive.
