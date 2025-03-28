@@ -120,8 +120,6 @@ genccode/exe{genccode}:
 #
 genccode/c{genccode}: genccode/in{genccode}
 {
-  genccode = genccode/exe{genccode}
-
   data_dir = $data_dir_install
 
   datfile_path = [path] $data_dir_install/$(data_name).dat
