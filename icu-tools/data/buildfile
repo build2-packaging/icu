@@ -37,11 +37,11 @@ import! [metadata] pkgdata = exe{pkgdata}
 # so that the myriad data subdirectories are created automatically. However
 # the tools expect individual data files to be inside <ICU_DATA_DIR>/icudtXXX/
 # (see `data_name` in root.build for details). Therefore set the build-time
-# ICU data directory to $out_base/tmp/ using the --icudatadir tools option and
-# create tmp/icudtXXX as a symlink to $out_base. The tmp/ indirection achieves
-# the separation of the build-time and run-time ICU data paths: without it the
-# tools will read <ICU_DATA_DIR>/icudtXXX/foo.bar before searching for foo.bar
-# in <ICU_DATA_DIR>/icudtXXX.dat.
+# ICU data directory to $out_base/$btdd/ using the --icudatadir tools option
+# and create $btdd/icudtXXX as a symlink to $out_base. The $btdd/ indirection
+# achieves the separation of the build-time and run-time ICU data paths:
+# without it the tools will read <ICU_DATA_DIR>/icudtXXX/foo.bar before
+# searching for foo.bar in <ICU_DATA_DIR>/icudtXXX.dat.
 #
 
 # The path to the build-time data directory.
