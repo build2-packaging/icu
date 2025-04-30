@@ -519,7 +519,6 @@ file{icudata.lst}:
 
   for t: $targets
     cont += "$path.relative($path($t), $out_base)"
-  end
 
   cont = $name.sort($cont)
 
@@ -532,18 +531,20 @@ file{icudata.lst}:
 
   cd = # Current directory
   for t: $cont
+  {
     d = $directory($t) # Target directory (if any).
 
     # Insert res_index if we've entered a new res_index directory.
     #
     if (!$empty($d) && $d != $cd && $name.find($res_index_dirs, $name($d)))
+    {
       cd = $d
       rip = $path($d/res{res_index}) # res_index target path.
       echo "$path.relative($rip, $out_base)" >> $o
-    end
+    }
 
     echo $t >> $o
-  end
+  }
 }}
 
 # Generate res_index.txt for a data directory. See source/data/BUILDRULES.py.
@@ -556,13 +557,7 @@ file{~'/res_index.txt/'}: file{~'/LOCALE_DEPS.json/'}
   # Generate a sorted listing of .txt files in the source directory to
   # initialise the list of input file names.
   #
-  # @@ Note: Append `/.` to the path otherwise find refuses to operate on it
-  #    if it's a symlink (build2 GH issue #434).
-  #
-  #    @@ TODO Remove workaround once the fix has been released (should be
-  #       build2 version 0.18.0).
-  #
-  find $sd/. -name \*.txt | set -n ifs # Input files
+  find $sd -name \*.txt | set -n ifs # Input files
   ifs = $name.sort($name($ifs))
 
   # Remove the target itself in case of an in-source build.
@@ -578,7 +573,6 @@ file{~'/res_index.txt/'}: file{~'/LOCALE_DEPS.json/'}
     ifs = $regex.filter_out_match($ifs, '^supplementalData$')
   elif ($sdn == 'zone')
     ifs = $regex.filter_out_match($ifs, '^tzdbNames$')
-  end
 
   depdb hash $ifs
 
@@ -592,7 +586,6 @@ file{~'/res_index.txt/'}: file{~'/LOCALE_DEPS.json/'}
 
   if ($null($ld) || $json.value_size($ld) == 0)
     exit "failed to parse $path($<[0])"
-  end
 
   # Extract the CLDR (Common Locale Data Repository) version and list of
   # aliases from LOCALE_DEPS.
@@ -601,7 +594,6 @@ file{~'/res_index.txt/'}: file{~'/LOCALE_DEPS.json/'}
 
   if ($null($cldr_version))
     exit "cldrVersion member is missing from $path($<[0])"
-  end
 
   ao = ($ld["aliases"]) # Aliases object
   aliases = ($null($ao) ? [null] : $object_names($ao))
@@ -624,7 +616,6 @@ file{~'/res_index.txt/'}: file{~'/LOCALE_DEPS.json/'}
 
   for a: $aliases $excl
     ifs = $regex.filter_out_match($ifs, "^\s*$a\$")
-  end
 
   # Write the output file.
   #
@@ -637,7 +628,6 @@ file{~'/res_index.txt/'}: file{~'/LOCALE_DEPS.json/'}
   echo "  InstalledLocales:table {" >> $o
   for f: $ifs
     echo "    $f {\"\"}" >> $o
-  end
   echo "  }" >> $o
 
   # Write the AliasLocales:table section.
@@ -645,7 +635,6 @@ file{~'/res_index.txt/'}: file{~'/LOCALE_DEPS.json/'}
   echo "  AliasLocales:table {" >> $o
   for a: $aliases
     echo "    $a {\"\"}" >> $o
-  end
   echo '  }' >> $o
 
   echo '}' >> $o
