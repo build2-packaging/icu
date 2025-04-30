@@ -99,9 +99,13 @@ genrb/exe{derb}:
 # metadata from the genccode executable.
 #
 # Include data/ to make the data archive target available for consuming
-# development builds to depend on.
+# development builds to depend on. Note: causes an include cycle (see
+# ../data/buildfile for details).
 #
 include ../data/
+
+data_basename = $(../data/ data_basename)
+data_name = $(../data/ data_name)
 
 genccode/exe{genccode}:
 {

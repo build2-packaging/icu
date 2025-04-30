@@ -1,6 +1,47 @@
 # file      : data/buildfile
 # license   : Unicode License; see accompanying LICENSE file
 
+# Detect host endianness.
+#
+# Note that this buildfile is also included by ../tools/buildfile and we
+# include that buildfile via the below tool importation. Thus there is an
+# include cycle. It is harmless provided we set data_basename and data_name
+# before the imports.
+#
+using autoconf
+
+h{endian}: in{endian}
+
+[rule_hint=c.predefs] buildfile{endian}: h{endian}
+{
+  c.predefs.poptions = false
+  c.predefs.macros = ICU_DATA_CHAR@icu_data_char
+}
+
+./: buildfile{endian} # Make sure it gets cleaned.
+
+if ($build.meta_operation == 'perform')
+{
+  update buildfile{endian}
+  source $path(buildfile{endian})
+}
+else
+  icu_data_char = 'l' # l for little-endian, b for big-endian.
+
+assert ($icu_data_char == 'l' || $icu_data_char == 'b')
+
+# These variables correspond to the upstream ICUDATA_BASENAME_VERSION and
+# ICUDATA_PLATFORM_NAME respectively.
+#
+data_basename = "icudt$(version.major)"        # icudt74
+data_name     = "$data_basename$icu_data_char" # icudt74l | icudt74b
+
+# Alternative versions of the `icu_data_char` and `data_name` variables for
+# the non-native endianness.
+#
+alt_icu_data_char = ($icu_data_char == 'l' ? 'b' : 'l')
+alt_data_name = "$data_basename$alt_icu_data_char" # icudt74b | icudt74l
+
 import! [metadata] genbrk = exe{genbrk}
 import! [metadata] gencfu = exe{gencfu}
 import! [metadata] gencnval = exe{gencnval}
@@ -69,12 +110,6 @@ btdd = [dir_path] build-time-data-dir
            --tempdir   $out_base        \
            $path(file{icudata.lst})
 }}
-
-# Alternative versions of the `icu_data_char` and `data_name` variables for
-# the non-native endianness.
-#
-alt_icu_data_char = ($icu_data_char == 'l' ? 'b' : 'l')
-alt_data_name = "$data_basename$alt_icu_data_char" # icudt74b | icudt74l
 
 # The alternative ICU data archive with the non-native endianness.
 #

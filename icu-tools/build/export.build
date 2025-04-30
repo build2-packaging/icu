@@ -19,7 +19,7 @@ if ($string.starts_with($n, 'icudt') && $e == 'dat')
 
   # Data basename. E.g. `icu74dt`.
   #
-  db = $($out_root/ data_basename)
+  db = $($out_root/data/ data_basename)
 
   # Imported endianness (the endianness character on the imported target).
   #

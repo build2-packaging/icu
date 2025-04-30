@@ -3,9 +3,29 @@
 
 import! [metadata] genccode = icu-tools%exe{genccode}
 
-# @@ TODO Update once endianness detection has been added to build2.
+# Detect target endianness.
 #
-icu_data_char = 'l' # l for little-endian, b for big-endian.
+using autoconf
+
+h{endian}: in{endian}
+
+[rule_hint=c.predefs] buildfile{endian}: h{endian}
+{
+  c.predefs.poptions = false
+  c.predefs.macros = ICU_DATA_CHAR@icu_data_char
+}
+
+./: buildfile{endian} # Make sure it gets cleaned.
+
+if ($build.meta_operation == 'perform')
+{
+  update buildfile{endian}
+  source $path(buildfile{endian})
+}
+else
+  icu_data_char = 'l' # l for little-endian, b for big-endian.
+
+assert ($icu_data_char == 'l' || $icu_data_char == 'b')
 
 # The path to the ICU data archive.
 #
@@ -33,9 +53,9 @@ data_name = $name($datfile)
 # headers. We will assume all of them as C headers, which is a bit of a hack
 # but doing it properly is too painful.
 #
-lib{icuuc}: uc/hxx{** -unicode/*} uc/unicode/h{*} \
-            uc/cxx{*}                             \
-            lib{icudata}
+./: lib{icuuc}: uc/hxx{** -unicode/*} uc/unicode/h{*} \
+                uc/cxx{*}                             \
+                lib{icudata}
 
 # The ICU data library.
 #

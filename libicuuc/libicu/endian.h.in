@@ -1,0 +1,11 @@
+/* Note: this header is only used to detect the byte order during the build.*/
+
+#undef BYTE_ORDER
+
+#if BYTE_ORDER == LITTLE_ENDIAN
+#  define ICU_DATA_CHAR l
+#elif BYTE_ORDER == BIG_ENDIAN
+#  define ICU_DATA_CHAR b
+#else
+#  error unexpected byte order
+#endif
