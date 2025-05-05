@@ -1,9 +1,3 @@
 On the revision:
 
 On the release:
-
-- Remove workaround for builtin find not working on symlinked directories (see
-  @@ TODO in icu-tools/data/buildfile).
-
-- Use endianness detection once added to build2 (see @@ TODO in
-  libicuuc/build/common.build).
