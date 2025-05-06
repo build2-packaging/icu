@@ -123,7 +123,7 @@ genccode/exe{genccode}:
 
 # Export the same metadata as above from the main function.
 #
-genccode/c{genccode}: genccode/in{genccode}
+[rule_hint=in] genccode/c{genccode}: genccode/in{genccode}
 {
   data_dir = $data_dir_install
 
