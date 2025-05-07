@@ -14,6 +14,19 @@ h{endian}: in{endian}
   c.predefs.poptions = false
   c.predefs.macros = ICU_DATA_CHAR@icu_data_char
 }
+% update
+if ($c.id == 'msvc'       ? ($c.version.major < 19 ||      \
+                             ($c.version.major == 19 &&    \
+                              $c.version.minor < 20))    : \
+    $c.id.type == 'clang' ? $c.version.major < 12        : \
+    false)
+{{
+  diag c-predefs $< -> $>
+
+  cat <<EOF >$path($>)
+    icu_data_char = 'l'
+    EOF
+}}
 
 ./: buildfile{endian} # Make sure it gets cleaned.
 
