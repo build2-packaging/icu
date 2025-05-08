@@ -1,3 +1,5 @@
 On the revision:
 
 On the release:
+
+- For-install issue in icu-tools (see @@ in icu-tools/buildfile).

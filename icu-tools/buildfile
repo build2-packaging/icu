@@ -2,6 +2,10 @@
 # during installation, some of its dependencies from tools/ will be updated
 # for update instead of for install.
 #
+# @@ This is not the way to do it and "works" only by accident (we match in
+#    parallel so the order is not guaranteed). See:
+#    https://github.com/build2/build2/issues/472
+#
 ./: {*/ -build/ -extra/} doc{INSTALL README} legal{LICENSE} manifest
 
 ./: extra/
