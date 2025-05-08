@@ -102,7 +102,7 @@ genrb/exe{derb}:
 # development builds to depend on. Note: causes an include cycle (see
 # ../data/buildfile for details).
 #
-include ../data/
+include [allow_cycle] ../data/
 
 data_basename = $(../data/ data_basename)
 data_name = $(../data/ data_name)
