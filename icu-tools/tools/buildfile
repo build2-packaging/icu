@@ -36,12 +36,25 @@ for t: $regex.filter_out_match($tools, 'genrb|genccode')
   #
   $t/exe{$t}: ../icu-bootstrap/libue{icu-bootstrap-install}: for_install = true
   $t/exe{$t}: ../icu-bootstrap/libue{icu-bootstrap-develop}: for_install = false
+
+  # All these tools are installed but some of the tools are also used during
+  # the build (see data/buildfile). While this doesn't necessarily work in
+  # general (incompatible builds, missing rpath, etc), we know that these
+  # tools function correctly for our purposes even when built for install. So
+  # we force them to be always built for install during update-for-install.
+  # See build2 issue #472 for background.
+  #
+  $t/exe{$t}: for_install = true
 }
 
 # Note: genccode.c is a generated source file.
 #
 ./: genccode/exe{genccode}: genccode/c{genccode} \
                             ../icu-bootstrap/libue{icu-bootstrap}
+
+# As above.
+#
+genccode/exe{genccode}: for_install = true
 
 # Dependencies for the genrb and derb tools (which share the genrb/
 # subdirectory).
@@ -61,6 +74,10 @@ genrb/exe{genrb derb} genccode/exe{genccode} : \
   ../icu-bootstrap/libue{icu-bootstrap-install}: for_install = true
 genrb/exe{genrb derb} genccode/exe{genccode}: \
   ../icu-bootstrap/libue{icu-bootstrap-develop}: for_install = false
+
+# As above.
+#
+genrb/exe{genrb derb}: for_install = true
 
 # Export metadata from the tool executables.
 #
