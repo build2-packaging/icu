@@ -1,1 +1,1 @@
-../../../upstream/icu4c/source/common/umapfile.cpp
+../../../icu-tools/icu-bootstrap/uc/umapfile.cpp
