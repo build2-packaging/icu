@@ -1,1 +1,1 @@
-../../../upstream/icu4c/source/common/ucnv_io.cpp
+../../../icu-tools/icu-bootstrap/uc/ucnv_io.cpp

@@ -36,12 +36,25 @@ for t: $regex.filter_out_match($tools, 'genrb|genccode')
   #
   $t/exe{$t}: ../icu-bootstrap/libue{icu-bootstrap-install}: for_install = true
   $t/exe{$t}: ../icu-bootstrap/libue{icu-bootstrap-develop}: for_install = false
+
+  # All these tools are installed but some of the tools are also used during
+  # the build (see data/buildfile). While this doesn't necessarily work in
+  # general (incompatible builds, missing rpath, etc), we know that these
+  # tools function correctly for our purposes even when built for install. So
+  # we force them to be always built for install during update-for-install.
+  # See build2 issue #472 for background.
+  #
+  $t/exe{$t}: for_install = true
 }
 
 # Note: genccode.c is a generated source file.
 #
 ./: genccode/exe{genccode}: genccode/c{genccode} \
                             ../icu-bootstrap/libue{icu-bootstrap}
+
+# As above.
+#
+genccode/exe{genccode}: for_install = true
 
 # Dependencies for the genrb and derb tools (which share the genrb/
 # subdirectory).
@@ -61,6 +74,10 @@ genrb/exe{genrb derb} genccode/exe{genccode} : \
   ../icu-bootstrap/libue{icu-bootstrap-install}: for_install = true
 genrb/exe{genrb derb} genccode/exe{genccode}: \
   ../icu-bootstrap/libue{icu-bootstrap-develop}: for_install = false
+
+# As above.
+#
+genrb/exe{genrb derb}: for_install = true
 
 # Export metadata from the tool executables.
 #
@@ -99,9 +116,13 @@ genrb/exe{derb}:
 # metadata from the genccode executable.
 #
 # Include data/ to make the data archive target available for consuming
-# development builds to depend on.
+# development builds to depend on. Note: causes an include cycle (see
+# ../data/buildfile for details).
 #
-include ../data/
+include [allow_cycle] ../data/
+
+data_basename = $(../data/ data_basename)
+data_name = $(../data/ data_name)
 
 genccode/exe{genccode}:
 {
@@ -109,29 +130,30 @@ genccode/exe{genccode}:
   #
   genccode.data_dir = $data_dir_develop
 
-  # Path to the ICU data archive. Make it null in the develop case to signal
-  # to consumers that they can import the target (i.e., as opposed to creating
-  # their own local file{} target).
+  # Paths to the ICU data archives. Make them null in the develop case to
+  # signal to consumers that they can import the target (i.e., as opposed to
+  # creating their own local file{} target).
   #
-  genccode.datfile_path = [path, null]
+  genccode.datfile_l_path = [path, null] # Little-endian.
+  genccode.datfile_b_path = [path, null] # Big-endian.
 }
 
 # Export the same metadata as above from the main function.
 #
-genccode/c{genccode}: genccode/in{genccode}
+[rule_hint=in] genccode/c{genccode}: genccode/in{genccode}
 {
-  genccode = genccode/exe{genccode}
-
   data_dir = $data_dir_install
 
-  datfile_path = [path] $data_dir_install/$(data_name).dat
+  datfile_l_path = [path] $data_dir_install/$(data_basename)l.dat
+  datfile_b_path = [path] $data_dir_install/$(data_basename)b.dat
 
   # Escape backslashes on Windows (C string literals). Wrap the printed
   # Buildfile values in single quotes to obviate the need to escape yet
   # another time.
   #
-  data_dir     = [dir_path] "'$regex.replace($data_dir, '\\', '\\\\')'"
-  datfile_path = [path]     "'$regex.replace($datfile_path, '\\', '\\\\')'"
+  data_dir       = [dir_path] "'$regex.replace($data_dir, '\\', '\\\\')'"
+  datfile_l_path = [path]     "'$regex.replace($datfile_l_path, '\\', '\\\\')'"
+  datfile_b_path = [path]     "'$regex.replace($datfile_b_path, '\\', '\\\\')'"
 }
 
 # Arrange for the data archive to be updated after any tool executable is

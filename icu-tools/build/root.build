@@ -14,6 +14,7 @@ cxx{*}: extension = cpp
 c.std = 11
 
 using c
+using c.predefs
 
 h{*}: extension = h
 c{*}: extension = c
@@ -27,8 +28,8 @@ using c.as-cpp
 define res: file
 res{*}: extension = res
 
-# The ICU data directory path for the installed and develop cases. This is the
-# directory that contains the ICU data archive.
+# The ICU data directory path for the installed and develop cases. This is
+# the directory that contains the ICU data archive.
 #
 data_dir_develop = [dir_path] $out_root/data
 data_dir_install = [dir_path] ($install.root != [null]           \

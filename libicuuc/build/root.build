@@ -4,6 +4,7 @@
 c.std = 11
 
 using c
+using c.predefs
 
 h{*}: extension = h
 c{*}: extension = c

@@ -1,0 +1,306 @@
+diff --git a/icu-tools/data/BUILDRULES.py b/icu-tools/data/BUILDRULES.py
+index 8662acf..a3613f6 100644
+--- a/icu-tools/data/BUILDRULES.py
++++ b/icu-tools/data/BUILDRULES.py
+@@ -62,37 +62,37 @@ def generate(config, io, common_vars):
+         "locales",
+         None,
+         config.use_pool_bundle,
+-        [])
++        [DepTarget("cnvalias")])
+ 
+     requests += generate_tree(config, io, common_vars,
+         "curr",
+         "curr",
+         config.use_pool_bundle,
+-        [])
++        [DepTarget("cnvalias")])
+ 
+     requests += generate_tree(config, io, common_vars,
+         "lang",
+         "lang",
+         config.use_pool_bundle,
+-        [])
++        [DepTarget("cnvalias")])
+ 
+     requests += generate_tree(config, io, common_vars,
+         "region",
+         "region",
+         config.use_pool_bundle,
+-        [])
++        [DepTarget("cnvalias")])
+ 
+     requests += generate_tree(config, io, common_vars,
+         "zone",
+         "zone",
+         config.use_pool_bundle,
+-        [])
++        [DepTarget("cnvalias")])
+ 
+     requests += generate_tree(config, io, common_vars,
+         "unit",
+         "unit",
+         config.use_pool_bundle,
+-        [])
++        [DepTarget("cnvalias")])
+ 
+     requests += generate_tree(config, io, common_vars,
+         "coll",
+@@ -102,21 +102,21 @@ def generate(config, io, common_vars):
+         # Depends on timezoneTypes.res and keyTypeData.res.
+         # TODO: We should not need this dependency to build collation.
+         # TODO: Bake keyTypeData.res into the common library?
+-        [DepTarget("coll_ucadata"), DepTarget("misc_res"), InFile("unidata/UCARules.txt")])
++        [DepTarget("coll_ucadata"), DepTarget("misc_res"), InFile("unidata/UCARules.txt"), DepTarget("cnvalias")])
+ 
+     requests += generate_tree(config, io, common_vars,
+         "brkitr",
+         "brkitr",
+         # Never use pool bundle for coll, brkitr, or rbnf
+         False,
+-        [DepTarget("brkitr_brk"), DepTarget("dictionaries")])
++        [DepTarget("brkitr_brk"), DepTarget("dictionaries"), DepTarget("cnvalias")])
+ 
+     requests += generate_tree(config, io, common_vars,
+         "rbnf",
+         "rbnf",
+         # Never use pool bundle for coll, brkitr, or rbnf
+         False,
+-        [])
++        [DepTarget("cnvalias")])
+ 
+     requests += [
+         ListRequest(
+@@ -158,7 +158,7 @@ def generate_confusables(config, io, common_vars):
+         SingleExecutionRequest(
+             name = "confusables",
+             category = "confusables",
+-            dep_targets = [DepTarget("cnvalias")],
++            dep_targets = [],
+             input_files = [txt1, txt2],
+             output_files = [cfu],
+             tool = IcuTool("gencfu"),
+@@ -403,7 +403,7 @@ def generate_misc(config, io, common_vars):
+         RepeatedExecutionRequest(
+             name = "misc_res",
+             category = "misc",
+-            dep_targets = [DepTarget("cnvalias")], # ICU-21175
++            dep_targets = [DepTarget("cnvalias")],
+             input_files = input_files,
+             output_files = output_files,
+             tool = IcuTool("genrb"),
+@@ -427,7 +427,7 @@ def generate_curr_supplemental(config, io, common_vars):
+         SingleExecutionRequest(
+             name = "curr_supplemental_res",
+             category = "curr_supplemental",
+-            dep_targets = [],
++            dep_targets = [DepTarget("cnvalias")],
+             input_files = [input_file],
+             output_files = [output_file],
+             tool = IcuTool("genrb"),
+@@ -450,7 +450,7 @@ def generate_zone_supplemental(config, io, common_vars):
+         SingleExecutionRequest(
+             name = "zone_supplemental_res",
+             category = "zone_supplemental",
+-            dep_targets = [],
++            dep_targets = [DepTarget("cnvalias")],
+             input_files = [input_file],
+             output_files = [output_file],
+             tool = IcuTool("genrb"),
+@@ -472,6 +472,7 @@ def generate_translit(config, io, common_vars):
+     ]
+     dep_files = set(InFile(filename) for filename in io.glob("translit/*.txt"))
+     dep_files -= set(input_files)
++    dep_files.add(DepTarget("cnvalias"))
+     dep_files = list(sorted(dep_files))
+     input_basenames = [v.filename[9:] for v in input_files]
+     output_files = [
+@@ -509,7 +510,7 @@ def generate_brkitr_lstm(config, io, common_vars):
+         RepeatedOrSingleExecutionRequest(
+             name = "lstm_res",
+             category = "brkitr_lstm",
+-            dep_targets = [],
++            dep_targets = [DepTarget("cnvalias")],
+             input_files = input_files,
+             output_files = output_files,
+             tool = IcuTool("genrb"),
+@@ -535,7 +536,7 @@ def generate_brkitr_adaboost(config, io, common_vars):
+         RepeatedOrSingleExecutionRequest(
+             name = "adaboost_res",
+             category = "brkitr_adaboost",
+-            dep_targets = [],
++            dep_targets = [DepTarget("cnvalias")],
+             input_files = input_files,
+             output_files = output_files,
+             tool = IcuTool("genrb"),
+@@ -666,6 +667,7 @@ def generate_tree(
+         IndexRequest(
+             name = index_file_target_name,
+             category = category,
++            dep_targets = [DepTarget("cnvalias")],
+             installed_files = installed_files,
+             alias_files = alias_files,
+             txt_file = index_file_txt,
+diff --git a/icu-tools/icu-bootstrap/uc/ucnv_io.cpp b/icu-tools/icu-bootstrap/uc/ucnv_io.cpp
+index 48bb5be..71eb6ad 100644
+--- a/icu-tools/icu-bootstrap/uc/ucnv_io.cpp
++++ b/icu-tools/icu-bootstrap/uc/ucnv_io.cpp
+@@ -40,6 +40,7 @@
+ #include "uarrsort.h"
+ #include "uassert.h"
+ #include "udataswp.h"
++#include "udatamem.h"
+ #include "cstring.h"
+ #include "cmemory.h"
+ #include "ucnv_io.h"
+@@ -235,23 +236,30 @@ static void U_CALLCONV initAliasData(UErrorCode &errCode) {
+     const uint32_t *sectionSizes;
+     uint32_t tableStart;
+     uint32_t currOffset;
++    int32_t sizeOfData;
++    int32_t sizeOfTOC;
+ 
+     ucln_common_registerCleanup(UCLN_COMMON_UCNV_IO, ucnv_io_cleanup);
+ 
+     U_ASSERT(gAliasData == nullptr);
+     data = udata_openChoice(nullptr, DATA_TYPE, DATA_NAME, isAcceptable, nullptr, &errCode);
+-    if(U_FAILURE(errCode)) {
++    if (U_FAILURE(errCode)) {
+         return;
+     }
+ 
+     sectionSizes = (const uint32_t *)udata_getMemory(data);
++    int32_t dataLength = udata_getLength(data); // This is the length minus the UDataInfo size
++    if (dataLength <= int32_t(sizeof(sectionSizes[0]))) {
++        // We don't even have a TOC!
++        goto invalidFormat;
++    }
+     table = (const uint16_t *)sectionSizes;
+ 
+-    tableStart      = sectionSizes[0];
+-    if (tableStart < minTocLength) {
+-        errCode = U_INVALID_FORMAT_ERROR;
+-        udata_close(data);
+-        return;
++    tableStart = sectionSizes[0];
++    sizeOfTOC = int32_t((tableStart + 1) * sizeof(sectionSizes[0]));
++    if (tableStart < minTocLength || dataLength <= sizeOfTOC) {
++        // We don't have a whole TOC!
++        goto invalidFormat;
+     }
+     gAliasData = data;
+ 
+@@ -264,11 +272,21 @@ static void U_CALLCONV initAliasData(UErrorCode &errCode) {
+     gMainTable.optionTableSize        = sectionSizes[7];
+     gMainTable.stringTableSize        = sectionSizes[8];
+ 
+-    if (tableStart > 8) {
++    if (tableStart > minTocLength) {
+         gMainTable.normalizedStringTableSize = sectionSizes[9];
+     }
+ 
+-    currOffset = tableStart * (sizeof(uint32_t)/sizeof(uint16_t)) + (sizeof(uint32_t)/sizeof(uint16_t));
++    sizeOfData = sizeOfTOC;
++    for (uint32_t section = 1; section <= tableStart; section++) {
++        sizeOfData += sectionSizes[section] * sizeof(table[0]);
++    }
++    if (dataLength < sizeOfData) {
++        // Truncated file!
++        goto invalidFormat;
++    }
++    // There may be some extra padding at the end, or this is a new file format with extra data that we can't read yet.
++
++    currOffset = (tableStart + 1) * (sizeof(uint32_t)/sizeof(uint16_t));
+     gMainTable.converterList = table + currOffset;
+ 
+     currOffset += gMainTable.converterListSize;
+@@ -306,6 +324,12 @@ static void U_CALLCONV initAliasData(UErrorCode &errCode) {
+     currOffset += gMainTable.stringTableSize;
+     gMainTable.normalizedStringTable = ((gMainTable.optionTable->stringNormalizationType == UCNV_IO_UNNORMALIZED)
+         ? gMainTable.stringTable : (table + currOffset));
++
++    return;
++
++invalidFormat:
++    errCode = U_INVALID_FORMAT_ERROR;
++    udata_close(data);
+ }
+ 
+ 
+diff --git a/icu-tools/icu-bootstrap/uc/udata.cpp b/icu-tools/icu-bootstrap/uc/udata.cpp
+index 88126fc..b2e1f04 100644
+--- a/icu-tools/icu-bootstrap/uc/udata.cpp
++++ b/icu-tools/icu-bootstrap/uc/udata.cpp
+@@ -1015,6 +1015,7 @@ static UDataMemory *doLoadFromIndividualFiles(const char *pkgName,
+                 *  and return it.   */
+                 pEntryData->mapAddr = dataMemory.mapAddr;
+                 pEntryData->map     = dataMemory.map;
++                pEntryData->length  = dataMemory.length;
+ 
+ #ifdef UDATA_DEBUG
+                 fprintf(stderr, "** Mapped file: %s\n", pathBuffer);
+diff --git a/icu-tools/icu-bootstrap/uc/umapfile.cpp b/icu-tools/icu-bootstrap/uc/umapfile.cpp
+index faa6d80..6f52ce4 100644
+--- a/icu-tools/icu-bootstrap/uc/umapfile.cpp
++++ b/icu-tools/icu-bootstrap/uc/umapfile.cpp
+@@ -131,6 +131,7 @@ typedef HANDLE MemoryMap;
+ 
+         HANDLE map = nullptr;
+         HANDLE file = INVALID_HANDLE_VALUE;
++        DWORD fileLength = 0;
+ 
+         UDataMemory_init(pData); /* Clear the output struct.        */
+ 
+@@ -171,6 +172,8 @@ typedef HANDLE MemoryMap;
+             return false;
+         }
+ 
++        fileLength = GetFileSize(file, nullptr);
++
+         // Note: We use nullptr/nullptr for lpAttributes parameter below.
+         // This means our handle cannot be inherited and we will get the default security descriptor.
+         /* create an unnamed Windows file-mapping object for the specified file */
+@@ -193,6 +196,8 @@ typedef HANDLE MemoryMap;
+             return false;
+         }
+         pData->map = map;
++        pData->length = fileLength;
++
+         return true;
+     }
+ 
+@@ -249,6 +254,7 @@ typedef HANDLE MemoryMap;
+         pData->map = (char *)data + length;
+         pData->pHeader=(const DataHeader *)data;
+         pData->mapAddr = data;
++        pData->length = length;
+ #if U_PLATFORM == U_PF_IPHONE
+         posix_madvise(data, length, POSIX_MADV_RANDOM);
+ #endif
+@@ -327,6 +333,7 @@ typedef HANDLE MemoryMap;
+         pData->map=p;
+         pData->pHeader=(const DataHeader *)p;
+         pData->mapAddr=p;
++        pData->length = fileLength;
+         return true;
+     }
+ 
+diff --git a/icu-tools/tools/gencfu/gencfu.cpp b/icu-tools/tools/gencfu/gencfu.cpp
+index f5f59d2..3cd4b72 100644
+--- a/icu-tools/tools/gencfu/gencfu.cpp
++++ b/icu-tools/tools/gencfu/gencfu.cpp
+@@ -215,14 +215,6 @@ int  main(int argc, char **argv) {
+     return (int)status;
+ 
+ #else
+-    /* Initialize ICU */
+-    u_init(&status);
+-    if (U_FAILURE(status)) {
+-        fprintf(stderr, "%s: can not initialize ICU.  status = %s\n",
+-            argv[0], u_errorName(status));
+-        exit(1);
+-    }
+-    status = U_ZERO_ERROR;
+ 
+     //  Read in the confusables source file
+ 

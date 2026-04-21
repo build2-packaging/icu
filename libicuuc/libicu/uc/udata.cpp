@@ -1,1 +1,1 @@
-../../../upstream/icu4c/source/common/udata.cpp
+../../../icu-tools/icu-bootstrap/uc/udata.cpp

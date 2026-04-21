@@ -81,6 +81,12 @@ fr.res" > $path($>[0])
 
 # Generate a resource bundle (foo.txt -> foo.res).
 #
+# Note that in contrast to ../../data/buildfile we don't need to bother with
+# the dependency on file{cnvalias.icu} target here, since cnvalias.icu file is
+# not generated at all. In this situation the ICU tools just ignore the
+# absence of this file in the data directory (see ../../data/buildfile for
+# details).
+#
 res{~'/(.*)/'}: file{~'/\1.txt/'} $genrb
 {{
   $genrb --sourcedir  $directory($path($<[0]))  \

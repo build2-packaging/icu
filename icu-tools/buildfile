@@ -1,10 +1,7 @@
-# Note: Put extra/ last to ensure that it is updated after tools/ otherwise,
-# during installation, some of its dependencies from tools/ will be updated
-# for update instead of for install.
-#
-./: {*/ -build/ -extra/} doc{INSTALL README} legal{LICENSE} manifest
+# file      : buildfile
+# license   : Unicode License; see accompanying LICENSE file
 
-./: extra/
+./: {*/ -build/} doc{INSTALL README} legal{LICENSE} manifest
 
 # Don't install tests or the INSTALL file.
 #

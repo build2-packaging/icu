@@ -1,6 +1,6 @@
 : 1
 name: libicui18n
-version: 74.2.0+1
+version: 74.2.0+2
 upstream-version: 74.2
 project: icu
 summary: ICU high-level internationalization C/C++ library
@@ -15,8 +15,8 @@ email: icu-support@lists.sourceforge.net ; Mailing list.
 package-email: packaging@build2.org      ; Mailing list.
 build-error-email: builds@build2.org
 builds: all
-depends: * build2 >= 0.17.0
-depends: * bpkg >= 0.17.0
+depends: * build2 >= 0.18.0-
+depends: * bpkg >= 0.18.0-
 depends: libicuuc == $
 
 # System package mapping.
