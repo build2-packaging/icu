@@ -89,7 +89,7 @@ switch $cxx.class
   }
   case 'msvc'
   {
-    common_cc_coptions  += /W3 /GF /Gy
+    common_cc_coptions  += /GF /Gy
     common_cxx_coptions += /Zc:wchar_t
   }
 }
