@@ -120,7 +120,15 @@ switch $tclass, $tsys
   case 'macos'
     asm_type = 'gcc-darwin'
   case 'windows', 'mingw32'
-    asm_type = 'gcc-mingw64'
+  {
+    # On 32-bit x86 C symbols are decorated with a leading underscore, which
+    # only the gcc-cygwin template adds (upstream uses it for 32-bit MinGW
+    # as well).
+    #
+    asm_type = ($regex.match($c.target.cpu, 'i[3-6]86') \
+                ? 'gcc-cygwin'                          \
+                : 'gcc-mingw64')
+  }
 }
 
 # Name of the ICU data library's entrypoint (the data archive filename with
